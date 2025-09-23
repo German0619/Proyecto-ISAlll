@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Historial</title>
+    <link rel="stylesheet" href="src/styles/historial.css">
+</head>
+
+<body>
+
+    <header>
+        <nav class="menu">
+            <ul></ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main>
+            <h1>Mi Historial de Servicios</h1>
+
+            <div class="filtros">
+                <select id="filtro-estado">
+                    <option value="todos">Todos los estados</option>
+                    <option value="completado">Completados</option>
+                    <option value="cancelado">Cancelados</option>
+                </select>
+                <button onclick="filtrarHistorial()">Filtrar</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Servicio</th>
+                            <th>Descripción</th>
+                            <th>Estado</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historial-body">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="src/controllers/historial.js"></script>
+</body>
+
+</html>

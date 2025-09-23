@@ -1,0 +1,364 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 50px;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: url('/public/img/Leonardo_Phoenix_Create_an_image_depicting_a_transportation_co_1.jpg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+.container {
+    width: 90%;
+    max-width: 900px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin: 40px;
+    overflow: hidden;
+}
+
+header {
+    margin-bottom: 20px;
+}
+
+.menu {
+    background-color: #9d98e6;
+    border-radius: 20px;
+    top: 20px;
+    left: 40px;
+    right: 40px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    position: fixed;
+}
+
+.menu ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.menu ul li {
+    display: inline;
+    margin: 5px;
+}
+
+.menu ul li a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 5px;
+    transition: 0.3s;
+    display: block;
+    text-align: center;
+}
+
+.menu ul li a:hover {
+    background-color: #FFD700;
+    color: black;
+}
+
+.logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin: 0 auto;
+}
+
+.active {
+    background-color: #5df15f;
+}
+
+h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+  
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 20px;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+}
+
+table th {
+    background-color: #585197;
+    color: #ffffff;
+}
+
+.add-button, .delete-button {
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    margin: 10px auto;
+    background-color: #5df15f;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-button:hover, .delete-button:hover {
+    background-color: #FFC300;
+}
+
+.delete-button {
+    background-color: #e41a1a;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    width: 90%;
+    max-width: 300px;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.modal-header {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.modal input, .modal select {
+    width: calc(100% - 16px);
+    margin: 5px 0;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.modal button {
+    width: 48%;
+    margin-top: 10px;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.modal .confirm-button {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.modal .cancel-button {
+    background-color: #f44336;
+    color: white;
+}
+
+/* Estilos responsive */
+@media (max-width: 768px) {
+    .menu ul {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    table, th, td {
+        font-size: 0.9rem;
+    }
+
+    .logo {
+        width: 60px;
+        height: 60px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .menu ul {
+        padding: 10px;
+    }
+
+    table th, table td {
+        padding: 8px;
+    }
+
+    .add-button, .delete-button {
+        max-width: 100%;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+}
+
+/* --- MODAL GENERAL --- */
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 1001;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,0.5);
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+/* --- BOTONES DEL MODAL --- */
+.confirm-button, .cancel-button {
+    padding: 10px 20px;
+    margin: 10px 5px 0 5px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 45%;
+    font-size: 1rem;
+}
+
+.confirm-button {
+    background-color: #5df15f;
+    color: white;
+}
+
+.confirm-button:hover {
+    background-color: #45c048;
+}
+
+.cancel-button {
+    background-color: #f44336;
+    color: white;
+}
+
+.cancel-button:hover {
+    background-color: #d32f2f;
+}
+
+/* --- INPUTS DEL MODAL --- */
+#nombre-herramienta,
+#cantidad-herramienta {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* --- BOTONES EN LA TABLA --- */
+.edit-button, .delete-button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    margin: 2px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100px; 
+    text-align: center;
+    display: inline-block;
+    font-size: 0.9rem;
+    justify-content: center;
+}
+
+.edit-button {
+    background-color: #9d98e6;
+    color: white;
+}
+
+.edit-button:hover {
+    background-color: #7e79d6;
+}
+
+.delete-button {
+    background-color: #e41a1a;
+    color: white;
+}
+
+.delete-button:hover {
+    background-color: #c62828;
+}
+
+/* --- BOTÓN PRINCIPAL "Añadir Nueva Herramienta" --- */
+.add-button {
+    background-color: #5df15f;
+    border: none;
+    padding: 12px 20px;
+    margin: 15px auto;
+    display: block;
+    font-weight: bold;
+    font-size: 1rem;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+}
+
+.add-button:hover {
+    background-color: #45c048;
+}

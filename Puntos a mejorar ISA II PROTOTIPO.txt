@@ -1,0 +1,66 @@
+Puntos a mejorar:
+
+Cotizar.html: 
+
+-mejorar la selección de servicios (visual/interfaz). ✅
+-colocar los precios de cada servicio y el precio por hora de cada trabajador.✅
+
+Agenda.html:
+
+-Cambiar el borrar de la agenda, en vez de que sea por servicio, que sea por...(agregar número de cotización).
+
+Inventario.html:
+
+-Controlar los NumericUpDown: que no puedan ser negativos.
+-Colocar que la cantidad en la pantalla no pueda ser editable ya que se hará un refresh cuando se guarden los datos editados.
+
+Colaboradores.html:
+
+-Modificar el "pago aproximado" a "Pago x Hora". 
+-En el botón de quitar colaborador:
+   Opciones:
+       -Agregarle número de colaborador a cada uno, que se genere automáticamente al agregar un colaborador (aparte), para que podamos eliminar por número de colaborador.
+       -Eliminar por identificación en vez de por nombre.
+-Al momento de añadir un colaborador, hacer las correspondientes validaciones de datos. 
+   -No más de 35 caracteres en el nombre, no se admitan números.
+   -El contacto se dividirá en 2: celular y correo. En el celular deben se solo 8 números y correo no más de 35 caracteres.
+   -La identificación solo pueden ser máximo 15 caracteres.
+   -La especialidad solo máximo 35 caracteres y tiene que ser de tipo cadena.
+   -El dinero debe tener un $ automático cuando se vaya a guardar el monto por hora.
+
+Puntos a desarrollar:
+
+Cotizar.html:
+
+-agregar un calendario para que el cliente seleccione la fecha en que le gustaría solicitar el servicio y que esa fecha sea la que se refleje 
+en la pantalla de agenda cuando se apruebe la solicitud.✅  
+
+Agenda.html:
+
+-agregar fecha, nombre y contacto del cliente, punto de partida y destino, servicio, trabajador solicitado, descripción.✅
+-colocar además, número de cotización (cuando se crea una cotización que se muestre su número único en la pantalla de agenda con sus respectivos datos).
+
+Solicitudes.html (crear):
+
+-Crear una opción dentro de la barra para que el jefe pueda aceptar y declinar cotizaciones, cuando se acepte la cotización, se agrega automáticamente a la agenda con 
+sus respectivos datos. Las cotizaciones declinadas se guardaran en la parte inferior de las Solicitudes.html para avisarles posteriormente 
+sobre el estado de su cotización.✅
+-La interfaz constará de dos partes, la primera será las solicitudes pendientes, y la segunda sección será las solicitudes denegadas, se guardarán 
+con el fin de que el jefe pueda ponerse en contacto con el cliente para llevar a cabo la notificación de la misma, después de ello, 
+podrá eliminar la solicitud denegada.
+
+Inventario.html:
+
+Opciones:
+
+-Agregar una vista de editor: para agregar, quitar o modificar el inventario.✅
+-Agregar botón para añadir una nueva herramienta, botón para añadir o quitar n herramientas (editar).✅
+-Agregar un botón de editar, donde se muestre una pequeña pantalla donde aparezca la opción de agregar o quitar n herramientas y 
+otro para añadir una herramienta nueva y luego el botón de "guardar" para que quede lista y reflejada la modificación.✅
+
+
+Puntos a eliminar:
+
+Agenda.html:
+
+-Eliminar el botón "Agregar Agenda".

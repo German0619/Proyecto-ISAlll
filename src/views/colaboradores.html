@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Colaboradores</title>
+  <link rel="stylesheet" href="src/styles/colaboradores.css">
+</head>
+<body>
+
+<header>
+  <nav class="menu">
+    <ul></ul>
+  </nav>
+</header>
+
+<div class="container">
+  <main>
+    <h1>Listado de Colaboradores</h1>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Identificación</th>
+            <th>Especialidad</th>
+            <th>Pago x Hora</th>
+          </tr>
+        </thead>
+        <tbody id="colaboradores-body">
+          <!-- Colaboradores cargados aquí -->
+        </tbody>
+      </table>
+    </div>
+    <div class="button-group">
+      <button class="add-button" id="btn-agregar">Agregar Colaborador</button>
+      <button class="delete-button" id="btn-eliminar">Eliminar Colaborador</button>
+    </div>
+  </main>
+</div>
+<!-- Modal Agregar -->
+<div class="modal-overlay" id="overlay-agregar"></div>
+<div class="modal" id="modal-agregar">
+  <div class="modal-header">Agregar Colaborador</div>
+  <input type="text" placeholder="Nombre" id="nombre">
+  <input type="text" placeholder="Identificación" id="id">
+  <input type="text" placeholder="Especialidad" id="especialidad">
+  <input type="text" placeholder="Pago x Hora" id="pago">
+  <button class="confirm-button" id="guardar-colaborador">Guardar</button>
+  <button class="cancel-button" onclick="cerrarModal('agregar')">Cancelar</button>
+</div>
+
+<!-- Modal Eliminar -->
+<div class="modal-overlay" id="overlay-eliminar"></div>
+<div class="modal" id="modal-eliminar">
+  <div class="modal-header">Eliminar Colaborador</div>
+  <input type="text" placeholder="Identificación a eliminar" id="id-eliminar">
+  <button class="confirm-button" id="confirmar-eliminar">Eliminar</button>
+  <button class="cancel-button" onclick="cerrarModal('eliminar')">Cancelar</button>
+</div>
+
+<script src="src/controllers/colaboradores.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar</title>
+    <link rel="stylesheet" href="src/styles/registrar.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <img src="/public/img/logo.png" alt="Logo" class="logo">
+            <h1>Registro de Usuario</h1>
+        </header>
+        <main>
+            <form id="register-form">
+                <input type="text" id="nombre" placeholder="Nombre" maxlength="35" required>
+                <input type="text" id="apellido" placeholder="Apellido" maxlength="35" required>
+                <input type="email" id="correo" placeholder="Correo Electrónico" maxlength="35" required>
+                <input type="password" id="password" placeholder="Contraseña" maxlength="35" required>
+                <button type="submit">Registrar</button>
+            </form>
+        </main>
+    </div>
+
+    <script src="src/controllers/registrar.js"></script>
+</body>
+
+</html>
