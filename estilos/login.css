@@ -1,0 +1,85 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: url('../img/Leonardo_Phoenix_Create_an_image_depicting_a_transportation_co_1.jpg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+.container {
+    width: 90%;
+    max-width: 400px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+h1 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #585197;
+}
+
+form input[type="email"],
+form input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+form button {
+    width: 100%;
+    background-color: #5df15f;
+    border: none;
+    padding: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #FFC300;
+    color: black;
+}
+
+.register {
+    margin-top: 15px;
+}
+
+.register a {
+    color: #585197;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.register a:hover {
+    text-decoration: underline;
+}

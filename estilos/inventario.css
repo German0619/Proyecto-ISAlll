@@ -1,0 +1,256 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    min-height: 100vh;
+    background-image: url('../img/Leonardo_Phoenix_Create_an_image_depicting_a_transportation_co_1.jpg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 900px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.menu {
+    background-color: #9d98e6;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.menu ul li a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.menu ul li a:hover {
+    background-color: #FFD700;
+    color: black;
+}
+
+.menu ul li a.active {
+    background-color: #5df15f;
+}
+
+.logo {
+    width: 80px;
+    height: 80px;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 2rem;
+    text-align: center;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+table th {
+    background-color: #585197;
+    color: white;
+}
+
+table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table tr:hover {
+    background-color: #e9e9e9;
+}
+
+.add-button {
+    background-color: #5df15f;
+    border: none;
+    padding: 12px 20px;
+    margin: 15px auto;
+    display: block;
+    font-weight: bold;
+    font-size: 1rem;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.add-button:hover {
+    background-color: #45c048;
+}
+
+.edit-button, .delete-button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    margin: 2px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.edit-button {
+    background-color: #9d98e6;
+    color: white;
+}
+
+.edit-button:hover {
+    background-color: #7e79d6;
+}
+
+.delete-button {
+    background-color: #e41a1a;
+    color: white;
+}
+
+.delete-button:hover {
+    background-color: #c62828;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 1001;
+    width: 90%;
+    max-width: 400px;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,0.5);
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+.modal input, .modal select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.confirm-button, .cancel-button {
+    padding: 10px 20px;
+    margin: 10px 5px 0 5px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 45%;
+    font-size: 1rem;
+}
+
+.confirm-button {
+    background-color: #5df15f;
+    color: white;
+}
+
+.confirm-button:hover {
+    background-color: #45c048;
+}
+
+.cancel-button {
+    background-color: #f44336;
+    color: white;
+}
+
+.cancel-button:hover {
+    background-color: #d32f2f;
+}
+
+@media (max-width: 768px) {
+    .menu ul {
+        flex-direction: column;
+    }
+    
+    .logo {
+        width: 60px;
+        height: 60px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    table {
+        font-size: 0.9rem;
+    }
+    
+    .edit-button, .delete-button {
+        padding: 6px 10px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    table th, table td {
+        padding: 8px;
+    }
+    
+    .add-button {
+        width: 100%;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .confirm-button, .cancel-button {
+        width: 100%;
+        margin: 5px 0;
+    }
+}

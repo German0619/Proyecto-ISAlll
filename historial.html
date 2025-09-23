@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Historial</title>
+    <link rel="stylesheet" href="estilos/historial.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <nav class="menu">
+                <ul id="menu-lista">
+                    <li><img src="img/logo.png" alt="Logo" class="logo"></li>
+                    <li><a href="cotizar.html">Cotizar</a></li>
+                    <li><a href="historial.html" class="active">Mi Historial</a></li>
+                    <li><a href="#" id="logout">Cerrar sesión</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <h1>Mi Historial de Servicios</h1>
+
+            <div class="filtros">
+                <select id="filtro-estado">
+                    <option value="todos">Todos los estados</option>
+                    <option value="pendiente">Pendientes</option>
+                    <option value="aceptada">Aceptadas</option>
+                    <option value="rechazada">Rechazadas</option>
+                </select>
+                <button onclick="filtrarHistorial()">Filtrar</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha Cotización</th>
+                            <th>Fecha Servicio</th>
+                            <th>Servicio</th>
+                            <th>Origen</th>
+                            <th>Destino</th>
+                            <th>Estado</th>
+                            <th>Total estimado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historial-body">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para ver detalles -->
+    <div id="modal-detalle" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Detalles del Servicio</h2>
+            <div id="modal-detalle-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Control de acceso y menú
+        const userType = localStorage.getItem('usuario');
+        const menu = document.getElementById('menu-lista');
+
+        if (menu) {
+            if (userType === 'admin') {
+                menu.innerHTML = `
+                    <li><img src="img/logo.png" alt="Logo" class="logo"></li>
+                    <li><a href="solicitudes.html">Solicitudes</a></li>
+                    <li><a href="agenda.html">Agenda</a></li>
+                    <li><a href="inventario.html">Inventario</a></li>
+                    <li><a href="colaboradores.html">Colaboradores</a></li>
+                    <li><a href="historial.html" class="active">Historial</a></li>
+                    <li><a href="#" id="logout">Cerrar sesión</a></li>
+                `;
+            } else {
+                menu.innerHTML = `
+                    <li><img src="img/logo.png" alt="Logo" class="logo"></li>
+                    <li><a href="cotizar.html">Cotizar</a></li>
+                    <li><a href="historial.html" class="active">Mi Historial</a></li>
+                    <li><a href="#" id="logout">Cerrar sesión</a></li>
+                `;
+            }
+        }
+
+        const logout = document.getElementById('logout');
+        if (logout) {
+            logout.addEventListener('click', function () {
+                localStorage.removeItem('usuario');
+                localStorage.removeItem('usuarioActual');
+                window.location.href = 'login.html';
+            });
+        }
+
+        // Función para formatear direcciones
+        function formatearDireccion(provincia, distrito, corregimiento, direccion) {
+            return `${direccion}, ${corregimiento}, ${distrito}, ${provincia}`;
+        }
+
+        // Función para extraer componentes de dirección
+        function extraerComponentesDireccion(direccionCompleta) {
+            const partes = direccionCompleta.split(', ');
+            return {
+                direccion: partes[0],
+                corregimiento: partes[1],
+                distrito: partes[2],
+                provincia: partes[3]
+            };
+        }
+
+        function cargarHistorial(filtro = 'todos') {
+            const tbody = document.getElementById('historial-body');
+            tbody.innerHTML = '';
+
+            const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
+            if (!usuarioActual) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Debe iniciar sesión</td></tr>';
+                return;
+            }
+
+            let historial = JSON.parse(localStorage.getItem('historial')) || [];
+            let solicitudes = JSON.parse(localStorage.getItem('solicitudes')) || [];
+
+            // Filtrar por el usuario actual
+            historial = historial.filter(item => item.usuario === usuarioActual.correo);
+
+            if (filtro !== 'todos') {
+                historial = historial.filter(item => item.estado === filtro);
+            }
+
+            if (historial.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No hay registros en tu historial</td></tr>';
+                return;
+            }
+
+            historial.sort((a, b) => new Date(b.fechaCotizacion || b.fecha) - new Date(a.fechaCotizacion || a.fecha));
+
+            historial.forEach(item => {
+                const row = document.createElement('tr');
+                const origen = extraerComponentesDireccion(item.origen);
+                const destino = extraerComponentesDireccion(item.destino);
+
+                // Función auxiliar para formatear fechas
+                function formatearFechaTabla(fechaISO) {
+                    if (!fechaISO) return 'Sin fecha';
+                    try {
+                        return new Date(fechaISO).toLocaleDateString('es-ES');
+                    } catch (e) {
+                        return 'Fecha inválida';
+                    }
+                }
+
+                const fechaCotizacion = formatearFechaTabla(item.fechaCotizacion);
+                const fechaServicio = formatearFechaTabla(item.fechaServicio);
+                const estadoClass = item.estado ? `estado-${item.estado.toLowerCase()}` : 'estado-pendiente';
+
+                row.innerHTML = `
+            <td>${fechaCotizacion}</td>
+            <td>${fechaServicio}</td>
+            <td>${item.servicio || 'Sin servicio'}</td>
+            <td>${origen.corregimiento}, ${origen.distrito}</td>
+            <td>${destino.corregimiento}, ${destino.distrito}</td>
+            <td class="${estadoClass}">${item.estado || 'Pendiente'}</td>
+            <td>$${item.total || '0'}</td>
+            <td>
+                <button class="ver-detalle" data-id="${item.id}">Ver detalles</button>
+                ${item.estado === 'pendiente' ? `<button class="cancelar-btn" data-id="${item.id}">Cancelar</button>` : ''}
+            </td>
+        `;
+                tbody.appendChild(row);
+            });
+
+            // Event listeners para los botones
+            document.querySelectorAll('.ver-detalle').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    mostrarDetalleServicio(this.getAttribute('data-id'));
+                });
+            });
+
+            document.querySelectorAll('.cancelar-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    cancelarSolicitud(this.getAttribute('data-id'));
+                });
+            });
+        }
+
+        function cancelarSolicitud(id) {
+            if (!confirm('¿Está seguro que desea cancelar esta solicitud?')) return;
+
+            let historial = JSON.parse(localStorage.getItem('historial')) || [];
+            let solicitudes = JSON.parse(localStorage.getItem('solicitudes')) || [];
+
+            // Actualizar en historial
+            const historialIndex = historial.findIndex(item => item.id == id);
+            if (historialIndex !== -1) {
+                historial[historialIndex].estado = 'cancelado';
+                historial[historialIndex].fechaCambioEstado = new Date().toISOString();
+                historial[historialIndex].motivoCambioEstado = 'Cancelado por el cliente';
+            }
+
+            // Actualizar en solicitudes (si existe)
+            const solicitudIndex = solicitudes.findIndex(item => item.id == id);
+            if (solicitudIndex !== -1) {
+                solicitudes.splice(solicitudIndex, 1);
+            }
+
+            localStorage.setItem('historial', JSON.stringify(historial));
+            localStorage.setItem('solicitudes', JSON.stringify(solicitudes));
+
+            alert('Solicitud cancelada correctamente');
+            cargarHistorial(); // Refrescar la vista
+        }
+
+        function mostrarDetalleServicio(id) {
+            const historial = JSON.parse(localStorage.getItem('historial')) || [];
+            const servicio = historial.find(item => item.id == id);
+
+            if (!servicio) {
+                alert('No se encontró el servicio solicitado');
+                return;
+            }
+
+            // Función para formatear fechas de manera segura
+            function formatearFecha(fechaISO) {
+                if (!fechaISO) return 'No especificada';
+                try {
+                    return new Date(fechaISO).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                } catch (e) {
+                    return 'Fecha inválida';
+                }
+            }
+
+            let contenido = `
+        <p><strong>Fecha de cotización:</strong> ${formatearFecha(servicio.fechaCotizacion)}</p>
+        <p><strong>Fecha solicitada para el servicio:</strong> ${formatearFecha(servicio.fechaServicio)}</p>
+        <p><strong>Tipo de servicio:</strong> ${servicio.servicio || 'No especificado'}</p>
+        
+        <h3>Ubicaciones</h3>
+        <p><strong>Origen:</strong> ${servicio.origen || 'No especificado'}</p>
+        <p><strong>Destino:</strong> ${servicio.destino || 'No especificado'}</p>
+        
+        <h3>Detalles</h3>
+        <p><strong>Descripción:</strong> ${servicio.descripcion || 'Sin descripción'}</p>
+        
+        <h3>Estado</h3>
+        <p><strong>Estado actual:</strong> ${servicio.estado || 'Pendiente'}</p>
+    `;
+
+            if (servicio.estado === 'completado' || servicio.estado === 'cancelado' || servicio.estado === 'rechazada') {
+                contenido += `
+            <p><strong>Fecha de cambio de estado:</strong> ${formatearFecha(servicio.fechaCambioEstado)}</p>
+            <p><strong>Motivo/comentarios:</strong> ${servicio.motivoCambioEstado || 'No especificado'}</p>
+        `;
+            }
+
+            contenido += `
+        <h3>Costos</h3>
+        <p><strong>Total estimado:</strong> $${servicio.total || '0'}</p>
+    `;
+
+            document.getElementById('modal-detalle-content').innerHTML = contenido;
+            document.getElementById('modal-detalle').style.display = 'block';
+        }
+
+        function filtrarHistorial() {
+            const filtro = document.getElementById('filtro-estado').value;
+            cargarHistorial(filtro);
+        }
+
+        // Cerrar modal al hacer clic en la X
+        document.querySelector('.close').addEventListener('click', function () {
+            document.getElementById('modal-detalle').style.display = 'none';
+        });
+
+        // Cerrar modal al hacer clic fuera del contenido
+        window.addEventListener('click', function (event) {
+            const modal = document.getElementById('modal-detalle');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarHistorial();
+        });
+    </script>
+</body>
+
+</html>

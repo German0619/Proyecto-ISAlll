@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Historial de Trabajos Completados</title>
+    <link rel="stylesheet" href="estilos/historialAdmin.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <nav class="menu">
+          <ul id="menu-lista">
+        </nav>
+      </header>
+
+      <main>
+        <h1>Historial de Trabajos Completados</h1>
+
+        <button class="button-clear" id="clear-history">
+          Borrar Historial Completo
+        </button>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha de la solicitud</th>
+                <th>Cliente</th>
+                <th>Contacto</th>
+                <th>Servicio</th>
+                <th>Descripción (Admin)</th>
+                <th>Ubicación Origen</th>
+                <th>Ubicación Destino</th>
+                <th>Fecha Solicitud</th>
+                <th>Trabajador</th>
+                <th>Equipo</th>
+              </tr>
+            </thead>
+            <tbody id="historial-body">
+              <!-- Trabajos completados cargados aquí -->
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const userType = localStorage.getItem("usuario");
+      const menu = document.getElementById("menu-lista");
+
+      if (menu) {
+        if (userType === "admin") {
+          menu.innerHTML = `
+            <li><img src="img/logo.png" alt="Logo" class="logo"></li>
+            <li><a href="solicitudes.html">Solicitudes</a></li>
+            <li><a href="agenda.html">Agenda</a></li>
+            <li><a href="inventario.html">Inventario</a></li>
+            <li><a href="colaboradores.html">Colaboradores</a></li>
+            <li><a href="historialAdmin.html" class="active">Historial</a></li>
+            <li><a href=historialClientes.html>Clientes</a></li>
+            <li><a href="#" id="logout">Cerrar sesión</a></li>
+            `;
+        } else {
+          alert("Acceso no autorizado.");
+          window.location.href = "index.html";
+        }
+      }
+
+      const logout = document.getElementById("logout");
+      if (logout) {
+        logout.addEventListener("click", function () {
+          localStorage.removeItem("usuario");
+          window.location.href = "login.html";
+        });
+      }
+
+      // Cargar historial
+      const historialBody = document.getElementById("historial-body");
+      let historial = JSON.parse(localStorage.getItem("historialAdmin")) || [];
+
+      function cargarHistorial() {
+        historial = JSON.parse(localStorage.getItem("historialAdmin")) || [];
+        historialBody.innerHTML = "";
+
+        if (historial.length === 0) {
+          const row = document.createElement("tr");
+          row.innerHTML = `<td colspan="10" style="text-align: center;">No hay trabajos completados</td>`;
+          historialBody.appendChild(row);
+          return;
+        }
+
+        // Ordenar por fecha ascendente
+        historial.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+        historial.forEach((item) => {
+          const row = document.createElement("tr");
+          const fechaFormateada = item.fecha
+            ? new Date(item.fecha).toLocaleDateString("es-ES")
+            : "Sin fecha";
+          const fechaSolicitud = item.fechaSolicitud
+            ? new Date(item.fechaSolicitud).toLocaleDateString("es-ES")
+            : "Desconocida";
+
+          row.innerHTML = `
+            <td>${fechaFormateada}</td>
+            <td>${item.cliente || "Sin nombre"}</td>
+            <td>${item.contacto || "Sin contacto"}</td>
+            <td>${item.servicio || "Sin servicio"}</td>
+            <td>${item.descripcionAdmin || "Sin descripción"}</td>
+            <td>${item.origen || "Sin origen"}</td>
+            <td>${item.destino || "Sin destino"}</td>
+            <td>${fechaSolicitud}</td>
+            <td>${item.trabajador || "No asignado"}</td>
+            <td>${item.equipo || "No asignado"}</td>
+            `;
+          historialBody.appendChild(row);
+        });
+      }
+
+      cargarHistorial();
+
+      const clearBtn = document.getElementById("clear-history");
+      clearBtn.addEventListener("click", () => {
+        if (
+          confirm(
+            "¿Estás seguro que deseas borrar todo el historial? Esta acción no se puede deshacer."
+          )
+        ) {
+          localStorage.removeItem("historial");
+          cargarHistorial();
+        }
+      });
+    </script>
+  </body>
+</html>
