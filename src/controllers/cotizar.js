@@ -33,14 +33,45 @@ async function verificarSesion() {
   }
 }
 
-// Uso ejemplo
+// Primero obtenemos el usuario logueado
 verificarSesion().then(user => {
   if (user) {
     console.log('Usuario logueado:', user);
-    // Aquí puedes usar user.rol o user.tipo para cargar menú dinámico
+    const menu = document.getElementById('menu-lista');
+    if (menu) {
+      menu.innerHTML = '<li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>';
+
+      if (user.rol === 'admin') {
+        menu.innerHTML += `
+          <li><a href="../view/solicitudes.html">Solicitudes</a></li>
+          <li><a href="../view/agenda/agenda.html">Agenda</a></li>
+          <li><a href="../view/inventario/inventario.html">Inventario</a></li>
+          <li><a href="../view/colaboradores/colaboradores.html">Colaboradores</a></li>
+          <li><a href="../view/login/login.html" id="logout">Cerrar sesión</a></li>
+        `;
+      } else if (user.rol === 'cliente') {
+        menu.innerHTML += `
+          <li><a href="../view/cotizar/cotizar.html" class="active">Cotizar</a></li>
+          <li><a href="../view/historial/historial.html">Mi Historial</a></li>
+          <li><a href="../view/login/login.html" id="logout">Cerrar sesión</a></li>
+        `;
+      } else {
+        menu.innerHTML += `
+          <li><a href="../index.html">Inicio</a></li>
+          <li><a href="../view/login.html">Iniciar sesión</a></li>
+        `;
+      }
+    }
+
+    const logout = document.getElementById('logout');
+    if (logout) {
+      logout.addEventListener('click', function () {
+        sessionStorage.removeItem('access_token');
+        window.location.href = '../index.html';
+      });
+    }
   }
 });
-
 
     // Acordeón
     const acc = document.getElementsByClassName("accordion");
@@ -240,69 +271,70 @@ verificarSesion().then(user => {
 
     cargarProvinciasLlegada();
 
-async function guardarSolicitud() {
-  const cliente = document.getElementById("nombreCliente").value; // opcional para mostrar
-  const numero = document.getElementById("numeroCliente").value;
-  const fechaServicio = document.getElementById("fechaServicio").value;
-  const tipoTrabajo = document.getElementById("tiposTrabajos").value;
+    async function guardarSolicitud() {
+      const cliente = document.getElementById("nombreCliente").value; // opcional para mostrar
+      const numero = document.getElementById("numeroCliente").value; // número de teléfono
+      const fechaServicio = document.getElementById("fechaServicio").value;
+      const tipoTrabajo = document.getElementById("tiposTrabajos").value;
 
-  const direccionPartida = `${document.getElementById("provincia-partida").value}, ${document.getElementById("distrito-partida").value}, ${document.getElementById("corregimiento-partida").value}, ${document.getElementById("direccionPartida").value}`;
-  const direccionLlegada = `${document.getElementById("provincia-llegada").value}, ${document.getElementById("distrito-llegada").value}, ${document.getElementById("corregimiento-llegada").value}, ${document.getElementById("direccionLlegada").value}`;
+      const direccionPartida = `${document.getElementById("provincia-partida").value}, ${document.getElementById("distrito-partida").value}, ${document.getElementById("corregimiento-partida").value}, ${document.getElementById("direccionPartida").value}`;
+      const direccionLlegada = `${document.getElementById("provincia-llegada").value}, ${document.getElementById("distrito-llegada").value}, ${document.getElementById("corregimiento-llegada").value}, ${document.getElementById("direccionLlegada").value}`;
 
-  const descripcion = document.getElementById("descripcion").value;
+      const descripcion = document.getElementById("descripcion").value;
 
-  const { total: totalServicios, serviciosDetalle } = calcularTotalServicios();
-  const costoMano = costoManoObra[tipoTrabajo] || 0;
-  const adicional = costoAdicionalTrabajo[tipoTrabajo] || 0;
-  const sumaFinal = totalServicios + costoMano + adicional;
+      const { total: totalServicios, serviciosDetalle } = calcularTotalServicios();
+      const costoMano = costoManoObra[tipoTrabajo] || 0;
+      const adicional = costoAdicionalTrabajo[tipoTrabajo] || 0;
+      const sumaFinal = totalServicios + costoMano + adicional;
 
-  const solicitud = {
-    id_solicitud: 0,                // siempre enviar 0 al crear
-    fecha: fechaServicio,
-    servicio: tipoTrabajo,
-    descripcion,
-    origen: direccionPartida,
-    destino: direccionLlegada,
-    total: sumaFinal,
-    servicios: serviciosDetalle.map(s => s.nombre)
-  };
+      const solicitud = {
+        id_solicitud: 0,                // siempre enviar 0 al crear
+        fecha: fechaServicio,
+        servicio: tipoTrabajo,
+        descripcion,
+        origen: direccionPartida,
+        destino: direccionLlegada,
+        total: sumaFinal,
+        telefono: numero,               
+        servicios: serviciosDetalle.map(s => s.nombre)
+      };
 
-  try {
-    const response = await fetch('http://localhost:8000/solicitud/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionStorage.getItem('access_token') || ''}`
-      },
-      body: JSON.stringify(solicitud)
-    });
+      try {
+        const response = await fetch('http://localhost:8000/solicitud/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionStorage.getItem('access_token') || ''}`
+          },
+          body: JSON.stringify(solicitud)
+        });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || "Error al enviar la solicitud");
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || "Error al enviar la solicitud");
+        }
+
+        const data = await response.json();
+
+        const contenido = `
+          <p><strong>Nombre:</strong> ${cliente}</p>
+          <p><strong>Contacto:</strong> ${numero}</p>
+          <p><strong>Fecha del Servicio:</strong> ${fechaServicio}</p>
+          <p><strong>Tipo de Trabajo:</strong> ${tipoTrabajo}</p>
+          <h4>Servicios Adicionales:</h4>
+          <ul>${serviciosDetalle.map(servicio => `<li>${servicio.nombre}: $${servicio.valor}</li>`).join("")}</ul>
+          <p><strong>Total:</strong> $${sumaFinal}</p>
+          <p style="color: green; font-weight: bold;">¡Solicitud enviada correctamente! ID: ${data.solicitud_id}</p>
+        `;
+
+        document.getElementById("modal-content").innerHTML = contenido;
+        document.getElementById("modal").style.display = "flex";
+        document.getElementById("cotizarForm").reset();
+
+      } catch (error) {
+        alert(error.message);
+      }
     }
-
-    const data = await response.json();
-
-    const contenido = `
-      <p><strong>Nombre:</strong> ${cliente}</p>
-      <p><strong>Contacto:</strong> ${numero}</p>
-      <p><strong>Fecha del Servicio:</strong> ${fechaServicio}</p>
-      <p><strong>Tipo de Trabajo:</strong> ${tipoTrabajo}</p>
-      <h4>Servicios Adicionales:</h4>
-      <ul>${serviciosDetalle.map(servicio => `<li>${servicio.nombre}: $${servicio.valor}</li>`).join("")}</ul>
-      <p><strong>Total:</strong> $${sumaFinal}</p>
-      <p style="color: green; font-weight: bold;">¡Solicitud enviada correctamente! ID: ${data.solicitud_id}</p>
-    `;
-
-    document.getElementById("modal-content").innerHTML = contenido;
-    document.getElementById("modal").style.display = "flex";
-    document.getElementById("cotizarForm").reset();
-
-  } catch (error) {
-    alert(error.message);
-  }
-}
 
     function calcularTotalServicios() {
       let total = 0;
@@ -324,37 +356,4 @@ async function guardarSolicitud() {
 
     function cerrarModal() {
       document.getElementById("modal").style.display = "none";
-    }
-
-    // Menu dinámico
-    const menu = document.getElementById('menu-lista');
-    if (menu) {
-      menu.innerHTML = '<li><img src="/public/img/logo.png" alt="Logo" class="logo"></li>';
-      if (userType === 'admin') {
-        menu.innerHTML += `
-      <li><a href="/src/solicutudes/solicitudes.html">Solicitudes</a></li>
-      <li><a href="/src/agenda/agenda.html">Agenda</a></li>
-      <li><a href="/src/inventario/inventario.html">Inventario</a></li>
-      <li><a href="/src/colaboradores/colaboradores.html">Colaboradores</a></li>
-      <li><a href="/src/login/login.html" id="logout">Cerrar sesión</a></li>
-    `;
-      } else if (userType === 'cliente') {
-        menu.innerHTML += `
-      <li><a href="/src/cotizar/cotizar.html" class="active">Cotizar</a></li>
-      <li><a href="/src/historial/historial.html">Mi Historial</a></li>
-      <li><a href="/src/login/login.html" id="logout">Cerrar sesión</a></li>
-    `;
-      } else {
-        menu.innerHTML += `
-      <li><a href="/src/index.html">Inicio</a></li>
-      <li><a href="/src/login/login.html">Iniciar sesión</a></li>
-    `;
-      }
-    }
-    const logout = document.getElementById('logout');
-    if (logout) {
-      logout.addEventListener('click', function () {
-        localStorage.removeItem('usuario');
-        window.location.href = 'login.html';
-      });
     }

@@ -12,15 +12,14 @@ async def crearSolicitud(solicitud : Solicitud,user_id : int = Depends(getTokenI
     try:
         async with db.transaction():
             query = """
-                INSERT INTO solicitudes(id_usuario, fecha, servicio, descripcion, origen, destino, total)
-                VALUES(:id_usuario, :fecha, :servicio, :descripcion, :origen, :destino, :total)
+                INSERT INTO solicitudes(id_usuario, fecha,telefono, servicio, descripcion, origen, destino, total)
+                VALUES(:id_usuario, :fecha, :telefono, :servicio, :descripcion, :origen, :destino, :total)
                 RETURNING id_solicitud
             """
             values = solicitud.model_dump()
             values["id_usuario"] = user_id
             del values["id_solicitud"]
             del values["servicios"]
-            print("Valores solicitud:", values)
 
             idSolicitud = await db.fetch_val(query,values)
             
@@ -32,7 +31,7 @@ async def crearSolicitud(solicitud : Solicitud,user_id : int = Depends(getTokenI
                 VALUES(:id_solicitud,:nombre_servicio)
                 RETURNING id
             """
-            print("Servicios:", solicitud.servicios)
+
             for serv in solicitud.servicio:
                 result = await db.fetch_val(query,{"id_solicitud":idSolicitud,"nombre_servicio":serv})
                 if not result:

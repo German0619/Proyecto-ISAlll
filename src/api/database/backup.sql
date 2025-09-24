@@ -50,6 +50,7 @@ CREATE TABLE solicitudes (
     fecha TIMESTAMP NOT NULL, -- fecha del servicio ingresada por el usuario
     descripcion TEXT,
     origen VARCHAR(255),
+    telefono VARCHAR(20) NOT NULL,
     destino VARCHAR(255),
     total DECIMAL(10,2) DEFAULT 0,
     estado VARCHAR(20) DEFAULT 'pendiente', -- pendiente | aceptada | rechazada

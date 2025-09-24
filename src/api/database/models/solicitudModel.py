@@ -4,6 +4,7 @@ from datetime import datetime
 
 class Solicitud(BaseModel):
     id_solicitud : Optional[int] = None
+    telefono: str 
     fecha: datetime
     servicio: str
     descripcion: Optional[str] = None
