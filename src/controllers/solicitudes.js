@@ -3,19 +3,19 @@ const menu = document.querySelector(".menu ul");
 
 if (menu) {
   menu.innerHTML =
-    '<li><img src="/public/img/logo.png" alt="Logo" class="logo"></li>';
+    '<li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>';
 
   if (userType === "admin") {
     menu.innerHTML += `
-      <li><a href="/src/solicitudes/solicitudes.html" class="active">Solicitudes</a></li>
-      <li><a href="/src/agenda/agenda.html">Agenda</a></li>
-      <li><a href="/src/inventario/inventario.html">Inventario</a></li>
-      <li><a href="/src/colaboradores/colaboradores.html">Colaboradores</a></li>
-      <li><a href="/src/login/login.html" id="logout">Cerrar sesión</a></li>
+      <li><a href="../views/solicitudes.html" class="active">Solicitudes</a></li>
+      <li><a href="../views/agenda.html">Agenda</a></li>
+      <li><a href="../views/inventario.html">Inventario</a></li>
+      <li><a href="../views/colaboradores.html">Colaboradores</a></li>
+      <li><a href="../views/login.html" id="logout">Cerrar sesión</a></li>
     `;
   } else {
     alert("Acceso no autorizado.");
-    window.location.href = "/src/index.html";
+    window.location.href = "../index.html";
   }
 }
 
@@ -23,7 +23,7 @@ const logout = document.getElementById("logout");
 if (logout) {
   logout.addEventListener("click", function () {
     localStorage.removeItem("usuario");
-    window.location.href = "/src/login/login.html";
+    window.location.href = "../views/login/login.html";
   });
 }
 

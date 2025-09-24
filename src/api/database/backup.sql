@@ -23,7 +23,6 @@ CREATE TABLE inventario (
 CREATE TABLE colaboradores (
     id_colaborador SERIAL PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL,
-    identificacion VARCHAR(20) UNIQUE NOT NULL,
     especialidad VARCHAR(150),
     pago_hora DECIMAL(10,2),
     estado VARCHAR(20) DEFAULT 'activo', -- activo/inactivo

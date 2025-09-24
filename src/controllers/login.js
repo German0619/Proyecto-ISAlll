@@ -14,7 +14,7 @@ document
     if (email === "admin.jefe@gmail.com" && password === "6789") {
       localStorage.setItem("usuario", "admin");
       alert("¡Bienvenid@ de vuelta!");
-      window.location.href = "/src/solicitudes/solicitudes.html";
+      window.location.href = "../views/solicitudes.html";
       return;
     }
     const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];

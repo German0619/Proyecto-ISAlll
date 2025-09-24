@@ -22,7 +22,7 @@ const userType = localStorage.getItem('usuario');
   if (logout) {
     logout.addEventListener('click', function() {
       localStorage.removeItem('usuario');
-      window.location.href = '/src/login/login.html';
+      window.location.href = '../views/login.html';
     });
   }
 
