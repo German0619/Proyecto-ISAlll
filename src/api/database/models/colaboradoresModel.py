@@ -14,5 +14,6 @@ def colaboradorSchema(colaborador)->dict:
         "id":colaborador.id_colaborador,
         "nombre":colaborador.nombre,
         "especialidad":colaborador.especialidad,
-        "pago_hora":colaborador.pago_hora
+        "pago_hora":colaborador.pago_hora,
+        "id_tipo_trabajo":colaborador.id_tipo_trabajo
     }

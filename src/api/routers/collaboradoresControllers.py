@@ -39,7 +39,7 @@ async def agregarColaborador(colaborador: Colaborador, _ = Depends(authToken)):
 async def obtenerColaboradores(_=Depends(authToken)):
     try:
         query = """
-            SELECT id_colaborador,nombre,especialidad,pago_hora FROM colaboradores
+            SELECT id_colaborador,nombre,especialidad,pago_hora,id_tipo_trabajo FROM colaboradores
         """
         data = await db.fetch_all(query)
         if not data:
@@ -47,7 +47,7 @@ async def obtenerColaboradores(_=Depends(authToken)):
                 "colaboradores": []
             }
         return {
-            "colaboradores": [colaboradorSchema(row)] for row in data 
+            "colaboradores": [colaboradorSchema(row) for row in data]
         }
     except HTTPException:
         raise

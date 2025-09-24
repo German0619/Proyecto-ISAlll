@@ -10,4 +10,4 @@ class Solicitud(BaseModel):
     origen: str
     destino: str
     total: float
-    servicios: List[str]  # Esto lo puedes guardar en otra tabla o en JSON
+    servicios: List[str]

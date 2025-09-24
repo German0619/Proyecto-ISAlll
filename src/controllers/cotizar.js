@@ -1,9 +1,4 @@
-// PROTECCIÓN: Si es admin, no puede entrar
-    const userType = localStorage.getItem('usuario');
-    if (userType === 'admin') {
-      alert('No tienes permiso para ver esta página.');
-      window.location.href = 'index.html';
-    }
+
 
     // Acordeón
     const acc = document.getElementsByClassName("accordion");
@@ -203,74 +198,70 @@
 
     cargarProvinciasLlegada();
 
-    function guardarSolicitud() {
-      const cliente = document.getElementById("nombreCliente").value;
-      const numero = document.getElementById("numeroCliente").value;
-      const fechaServicio = document.getElementById("fechaServicio").value;
-      const tipoTrabajo = document.getElementById("tiposTrabajos").value;
+async function guardarSolicitud() {
+  const cliente = document.getElementById("nombreCliente").value; // opcional para mostrar
+  const numero = document.getElementById("numeroCliente").value;
+  const fechaServicio = document.getElementById("fechaServicio").value;
+  const tipoTrabajo = document.getElementById("tiposTrabajos").value;
 
-      // Capturar direcciones correctamente
-      const direccionPartida = `${document.getElementById("provincia-partida").value}, ${document.getElementById("distrito-partida").value}, ${document.getElementById("corregimiento-partida").value}, ${document.getElementById("direccionPartida").value}`;
-      const direccionLlegada = `${document.getElementById("provincia-llegada").value}, ${document.getElementById("distrito-llegada").value}, ${document.getElementById("corregimiento-llegada").value}, ${document.getElementById("direccionLlegada").value}`;
+  const direccionPartida = `${document.getElementById("provincia-partida").value}, ${document.getElementById("distrito-partida").value}, ${document.getElementById("corregimiento-partida").value}, ${document.getElementById("direccionPartida").value}`;
+  const direccionLlegada = `${document.getElementById("provincia-llegada").value}, ${document.getElementById("distrito-llegada").value}, ${document.getElementById("corregimiento-llegada").value}, ${document.getElementById("direccionLlegada").value}`;
 
-      const descripcion = document.getElementById("descripcion").value;
+  const descripcion = document.getElementById("descripcion").value;
 
-      const { total: totalServicios, serviciosDetalle } = calcularTotalServicios();
-      const costoMano = costoManoObra[tipoTrabajo] || 0;
-      const adicional = costoAdicionalTrabajo[tipoTrabajo] || 0;
-      const sumaFinal = totalServicios + costoMano + adicional;
-      const registroHistorial = {
-        id: Date.now(),
-        usuario: localStorage.getItem('usuarioActual'), 
-        fecha: new Date().toISOString(),
-        cliente: cliente,
-        contacto: numero,
-        servicio: tipoTrabajo,
-        descripcion: descripcion,
-        origen: direccionPartida,
-        destino: direccionLlegada,
-        total: sumaFinal,
-        estado: 'pendiente',
-        servicios: serviciosDetalle.map(s => s.nombre)
-      };
+  const { total: totalServicios, serviciosDetalle } = calcularTotalServicios();
+  const costoMano = costoManoObra[tipoTrabajo] || 0;
+  const adicional = costoAdicionalTrabajo[tipoTrabajo] || 0;
+  const sumaFinal = totalServicios + costoMano + adicional;
 
-      let historial = JSON.parse(localStorage.getItem('historial')) || [];
-      historial.push(registroHistorial);
-      localStorage.setItem('historial', JSON.stringify(historial));
+  const solicitud = {
+    id_solicitud: 0,                // siempre enviar 0 al crear
+    fecha: fechaServicio,
+    servicio: tipoTrabajo,
+    descripcion,
+    origen: direccionPartida,
+    destino: direccionLlegada,
+    total: sumaFinal,
+    servicios: serviciosDetalle.map(s => s.nombre)
+  };
 
-      const solicitud = {
-        id: Date.now(),
-        cliente: cliente,
-        contacto: numero,
-        fecha: fechaServicio,
-        servicio: tipoTrabajo,
-        descripcion: descripcion,
-        origen: direccionPartida,
-        destino: direccionLlegada,
-        total: sumaFinal,
-        servicios: serviciosDetalle.map(s => s.nombre),
-        estado: "pendiente"
-      };
+  try {
+    const response = await fetch('http://localhost:8000/solicitud/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem('access_token') || ''}`
+      },
+      body: JSON.stringify(solicitud)
+    });
 
-      let solicitudes = JSON.parse(localStorage.getItem('solicitudes')) || [];
-      solicitudes.push(solicitud);
-      localStorage.setItem('solicitudes', JSON.stringify(solicitudes));
-
-      let contenido = `
-    <p><strong>Nombre:</strong> ${cliente}</p>
-    <p><strong>Contacto:</strong> ${numero}</p>
-    <p><strong>Fecha del Servicio:</strong> ${fechaServicio}</p>
-    <p><strong>Tipo de Trabajo:</strong> ${tipoTrabajo}</p>
-    <h4>Servicios Adicionales:</h4>
-    <ul>${serviciosDetalle.map(servicio => `<li>${servicio.nombre}: $${servicio.valor}</li>`).join("")}</ul>
-    <p><strong>Total:</strong> $${sumaFinal}</p>
-    <p style="color: green; font-weight: bold;">¡Solicitud enviada correctamente!</p>
-  `;
-
-      document.getElementById("modal-content").innerHTML = contenido;
-      document.getElementById("modal").style.display = "flex";
-      document.getElementById("cotizarForm").reset();
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Error al enviar la solicitud");
     }
+
+    const data = await response.json();
+
+    const contenido = `
+      <p><strong>Nombre:</strong> ${cliente}</p>
+      <p><strong>Contacto:</strong> ${numero}</p>
+      <p><strong>Fecha del Servicio:</strong> ${fechaServicio}</p>
+      <p><strong>Tipo de Trabajo:</strong> ${tipoTrabajo}</p>
+      <h4>Servicios Adicionales:</h4>
+      <ul>${serviciosDetalle.map(servicio => `<li>${servicio.nombre}: $${servicio.valor}</li>`).join("")}</ul>
+      <p><strong>Total:</strong> $${sumaFinal}</p>
+      <p style="color: green; font-weight: bold;">¡Solicitud enviada correctamente! ID: ${data.solicitud_id}</p>
+    `;
+
+    document.getElementById("modal-content").innerHTML = contenido;
+    document.getElementById("modal").style.display = "flex";
+    document.getElementById("cotizarForm").reset();
+
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
     function calcularTotalServicios() {
       let total = 0;
       const serviciosDetalle = [];

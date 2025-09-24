@@ -1,6 +1,6 @@
 document
   .getElementById("register-form")
-  .addEventListener("submit", function (event) {
+  .addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const nombre = document.getElementById("nombre").value.trim();
@@ -8,20 +8,39 @@ document
     const correo = document.getElementById("correo").value.trim();
     const password = document.getElementById("password").value.trim();
 
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-
-    const existe = usuarios.some(
-      (u) => u.correo === correo || correo === "juanito.golondrina@gmail.com"
-    );
-    if (existe) {
-      alert("Ese correo ya está registrado.");
+    if (!nombre || !apellido || !correo || !password) {
+      alert("Por favor completa todos los campos.");
       return;
     }
 
-    usuarios.push({ nombre, apellido, correo, password });
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+    try {
+      // Registrar usuario en la API
+      const response = await fetch("http://localhost:8000/auth/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombre: nombre,
+          apellido: apellido,
+          correo: correo,
+          contrasena: password
+        }),
+      });
 
-    alert("¡Usuario registrado con éxito!");
-    localStorage.setItem("usuario", "cliente");
-    window.location.href = "/src/cotizar/cotizar.html";
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.detail || "Ocurrió un error al registrar el usuario.");
+        return;
+      }
+
+      alert("¡Usuario registrado con éxito! Ahora puedes iniciar sesión.");
+      // Redirigir al login
+      window.location.href = "login.html";
+
+    } catch (error) {
+      console.error("Error al registrar usuario:", error);
+      alert("Ocurrió un error al registrar el usuario. Intenta nuevamente.");
+    }
   });

@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from database.connectDB import db
-from database.models.userModel import Usuarios
-from utils.security import generateJWT
+from database.models.userModel import Usuarios,userSchema
+from utils.security import generateJWT,getTokenId
 from utils.infoVerify import searchUser,validContrasena
 from utils.httpError import errorInterno
 router = APIRouter(prefix ="/auth",tags=["Autenticacion"])
@@ -61,3 +61,15 @@ async def register(user: Usuarios):
         raise
     except Exception as e:
         raise errorInterno(e)
+
+# Obtener datos del usuario logueado
+@router.get("/me", status_code=status.HTTP_200_OK)
+async def get_me(userId: int = Depends(getTokenId)):
+    try:
+        userData = await searchUser(userId,1)
+
+        return userSchema(userData)
+    except HTTPException:
+        raise
+    except Exception:
+        raise errorInterno()
