@@ -82,7 +82,7 @@ def generateJWT(id: int) -> str:
 # -------------------------
 async def getRol(id: int):
     try:
-        query = "SELECT rol FROM usuarios WHERE id = :id"
+        query = "SELECT rol FROM usuarios WHERE id_usuario = :id"
         result = await db.fetch_one(query, {"id": id})
         if not result:
             raise HTTPException(
