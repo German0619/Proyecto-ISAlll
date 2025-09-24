@@ -4,7 +4,15 @@ from typing import Optional
 from datetime import datetime
 
 class Colaborador(BaseModel):
-    id_colaborador:Optional[int] = None
+    id_colaborador:int
     nombre: str
     especialidad: str
     pago_hora: float
+
+def colaboradorSchema(colaborador)->dict:
+    return {
+        "id":colaborador.id_colaborador,
+        "nombre":colaborador.nombre,
+        "especialidad":colaborador.especialidad,
+        "pago_hora":colaborador.pago_hora
+    }

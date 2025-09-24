@@ -82,3 +82,13 @@ def validCategoria(categoria: int):
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail="Categoría inválida"
         )
+
+async def searchColaboradores(id:int):
+    try:
+        query = """
+            SELECT * FROM colaboradores WHERE id_colaborador =:id_colaborador
+        """
+        data = await db.fetch_one(query,{"id_colaborador":id})
+        return  data
+    except Exception:
+        raise errorInterno()
