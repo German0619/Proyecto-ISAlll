@@ -1,3 +1,45 @@
+async function verificarSesion() {
+  try {
+    const token = sessionStorage.getItem('access_token') || '';
+    if (!token) {
+      alert('No tienes autorización para acceder a esta página.');
+      window.location.href = '../index.html';
+      return null;
+    }
+
+    const response = await fetch('http://localhost:8000/auth/me/', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      alert('No tienes autorización para acceder a esta página.');
+      window.location.href = '../index.html';
+      return null;
+    }
+
+    const data = await response.json();
+    // data debería incluir algo como { id_usuario, nombre, rol, ... }
+    return data;
+
+  } catch (error) {
+    console.error('Error al verificar sesión:', error);
+    alert('No tienes autorización para acceder a esta página.');
+    window.location.href = '../index.html';
+    return null;
+  }
+}
+
+// Uso ejemplo
+verificarSesion().then(user => {
+  if (user) {
+    console.log('Usuario logueado:', user);
+    // Aquí puedes usar user.rol o user.tipo para cargar menú dinámico
+  }
+});
 
 
     // Acordeón
