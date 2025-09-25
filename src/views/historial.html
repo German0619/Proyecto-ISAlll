@@ -21,12 +21,11 @@
             <h1>Mi Historial de Servicios</h1>
 
             <div class="filtros">
-                <select id="filtro-estado">
-                    <option value="todos">Todos los estados</option>
-                    <option value="completado">Completados</option>
-                    <option value="cancelado">Cancelados</option>
-                </select>
-                <button onclick="filtrarHistorial()">Filtrar</button>
+              <select id="filtro-estado" onchange="filtrarHistorial()">
+                <option value="todas">Todos</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="rechazado">Rechazado</option>
+              </select>
             </div>
 
 <div style="max-height: 400px; overflow-y: auto;" id="historial-container">

@@ -64,10 +64,7 @@ async function verificarSesion() {
   }
 }
 
-// --------------------
-// Cargar historial con paginación
-// --------------------
-async function cargarHistorial(filtro = "todos", append = false) {
+async function cargarHistorial(filtro = "todas", append = false) {
   const tbody = document.getElementById("historial-body");
   if (!append) tbody.innerHTML = "";
 
@@ -75,6 +72,7 @@ async function cargarHistorial(filtro = "todos", append = false) {
     const url = new URL("http://localhost:8000/solicitud/me/");
     url.searchParams.append("page", paginaActual);
     url.searchParams.append("size", size);
+    url.searchParams.append("estado", filtro); // enviar filtro al backend
 
     const response = await fetch(url, {
       method: "GET",
@@ -85,11 +83,7 @@ async function cargarHistorial(filtro = "todos", append = false) {
 
     const data = await response.json();
     totalPaginas = data.total_pages || 1;
-    let historial = data.solicitudes || [];
-
-    if (filtro !== "todos") {
-      historial = historial.filter(item => item.estado === filtro);
-    }
+    const historial = data.solicitudes || [];
 
     if (historial.length === 0 && !append) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay registros en tu historial</td></tr>';
@@ -125,10 +119,11 @@ async function cargarHistorial(filtro = "todos", append = false) {
 // Función para filtrar historial
 // --------------------
 function filtrarHistorial() {
-  const filtro = document.getElementById("filtro-estado").value;
+  const filtro = document.getElementById("filtro-estado").value || "todas";
   paginaActual = 1;
   cargarHistorial(filtro);
 }
+
 
 // --------------------
 // Botón "Cargar más"
