@@ -28,15 +28,23 @@ Antes de ejecutar el proyecto, asegúrate de tener instalado lo siguiente:
 1. En la raíz del proyecto, crea un archivo llamado `.env`.
 2. Copia y pega el siguiente contenido, ajustando `DB_PASSWORD` con tu contraseña de PostgreSQL:
 
-DB_USER=postgres
-DB_PASSWORD=tu_contraseña
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=transporte_hector_murillo
-SECRET_KEY=RW1pbGlhLVRhbiBHb2QsUmVtIFpaWg
-ACCESS_TOKEN_EXPIRED_MINUTES=60
-ALGORITHM=HS256
-VALID_ROL=admin,cliente
+`DB_USER=postgres`
+
+`DB_PASSWORD=tu_contraseña`
+
+`DB_HOST=localhost`
+
+`DB_PORT=5432`
+
+`DB_NAME=transporte_hector_murillo`
+
+`SECRET_KEY=RW1pbGlhLVRhbiBHb2QsUmVtIFpaWg`
+
+`ACCESS_TOKEN_EXPIRED_MINUTES=60`
+
+`ALGORITHM=HS256`
+
+`VALID_ROL=admin,cliente`
 
 > **Nota:** Estas variables se utilizan para la conexión a la base de datos, autenticación y control de roles.
 
