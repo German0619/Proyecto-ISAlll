@@ -29,21 +29,25 @@
                 <button onclick="filtrarHistorial()">Filtrar</button>
             </div>
 
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Servicio</th>
-                            <th>Descripción</th>
-                            <th>Estado</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historial-body">
-                    </tbody>
-                </table>
-            </div>
+<div style="max-height: 400px; overflow-y: auto;" id="historial-container">
+  <table id="historial-table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Tipo de Trabajo</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody id="historial-body">
+      <!-- Filas se agregarán aquí -->
+    </tbody>
+  </table>
+</div>
+
+<button id="cargar-mas" style="display:none;">Cargar más</button>
+
         </main>
     </div>
 

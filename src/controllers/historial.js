@@ -1,169 +1,147 @@
+const token = sessionStorage.getItem("access_token") || "";
+let paginaActual = 1;
+const size = 10;
+let totalPaginas = 1;
+
 // --------------------
-// Verificar sesión y obtener usuario
+// Verificar sesión y usuario
 // --------------------
 async function verificarSesion() {
   try {
-    const token = sessionStorage.getItem('access_token') || '';
-    if (!token) {
-      await Swal.fire({
-        icon: 'error',
-        title: 'No autorizado',
-        text: 'No tienes autorización para acceder a esta página.'
-      });
-      window.location.href = '../index.html';
+    if (!token) throw new Error("No token");
+
+    const response = await fetch("http://localhost:8000/auth/me/", {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
+    });
+
+    if (!response.ok) throw new Error("No autorizado");
+
+    const user = await response.json();
+
+    if (user.rol !== "cliente") {
+      await Swal.fire({ icon: "error", title: "Acceso no autorizado", text: "Solo los clientes pueden acceder a esta página." });
+      window.location.href = "../index.html";
       return null;
     }
 
-    const response = await fetch('http://localhost:8000/auth/me/', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+    // Configurar menú
+    const menu = document.getElementById("menu-lista");
+    if (menu) {
+      menu.innerHTML = `
+        <li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>
+        <li><a href="../views/historial.html" class="active">Mi Historial</a></li>
+        <li><a href="../views/cotizar.html">Nueva Cotización</a></li>
+        <li><a href="../views/login.html" id="logout">Cerrar sesión</a></li>
+      `;
+    }
+
+    // Logout
+    document.getElementById("logout")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const result = await Swal.fire({
+        title: "¿Cerrar sesión?",
+        text: "¿Seguro que quieres cerrar sesión?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, cerrar sesión",
+        cancelButtonText: "Cancelar"
+      });
+      if (result.isConfirmed) {
+        sessionStorage.removeItem("access_token");
+        await Swal.fire({ icon: "success", title: "Sesión cerrada", text: "Has cerrado sesión correctamente." });
+        window.location.href = "../index.html";
       }
     });
 
-    if (!response.ok) {
-      await Swal.fire({
-        icon: 'error',
-        title: 'No autorizado',
-        text: 'No tienes autorización para acceder a esta página.'
-      });
-      window.location.href = '../index.html';
-      return null;
-    }
+    return user;
 
-    const data = await response.json();
-    return data; // { id_usuario, nombre, rol, ... }
-  } catch (error) {
-    console.error('Error al verificar sesión:', error);
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'No tienes autorización para acceder a esta página.'
-    });
-    window.location.href = '../index.html';
+  } catch (err) {
+    console.error("Error al verificar sesión:", err);
+    await Swal.fire({ icon: "error", title: "No autorizado", text: "No tienes autorización para acceder." });
+    window.location.href = "../index.html";
     return null;
   }
 }
 
 // --------------------
-// Inicializar la página
+// Cargar historial con paginación
 // --------------------
-verificarSesion().then(user => {
-  if (!user) return;
-
-  const menu = document.getElementById('menu-lista');
-  if (menu) {
-    menu.innerHTML = '<li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>';
-
-    if (user.rol === 'cliente') {
-      menu.innerHTML += `
-        <li><a href="../views/historial.html" class="active">Mi Historial</a></li>
-        <li><a href="../views/cotizar.html">Nueva Cotización</a></li>
-        <li><a href="../views/login.html" id="logout">Cerrar sesión</a></li>
-      `;
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Acceso no autorizado',
-        text: 'Solo los clientes pueden acceder a esta página.'
-      }).then(() => window.location.href = '../index.html');
-      return;
-    }
-  }
-
-  const logout = document.getElementById('logout');
-  if (logout) {
-    logout.addEventListener('click', async function(e) {
-      e.preventDefault();
-      const result = await Swal.fire({
-        title: '¿Cerrar sesión?',
-        text: "¿Seguro que quieres cerrar sesión?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, cerrar sesión',
-        cancelButtonText: 'Cancelar'
-      });
-
-      if (result.isConfirmed) {
-        sessionStorage.removeItem('access_token');
-        await Swal.fire({
-          icon: 'success',
-          title: 'Sesión cerrada',
-          text: 'Has cerrado sesión correctamente.'
-        });
-        window.location.href = '../index.html';
-      }
-    });
-  }
-
-  // Una vez validado el usuario, cargar historial
-  cargarHistorial();
-});
-
-async function cargarHistorial(filtro = "todos") {
+async function cargarHistorial(filtro = "todos", append = false) {
   const tbody = document.getElementById("historial-body");
-  tbody.innerHTML = "";
-
-  const token = sessionStorage.getItem("access_token") || ""; // o localStorage según tu implementación
-  if (!token) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No autorizado</td></tr>';
-    return;
-  }
+  if (!append) tbody.innerHTML = "";
 
   try {
-    const response = await fetch("http://localhost:8000/solicitud/me/", {
+    const url = new URL("http://localhost:8000/solicitud/me/");
+    url.searchParams.append("page", paginaActual);
+    url.searchParams.append("size", size);
+
+    const response = await fetch(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      }
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
     });
 
     if (!response.ok) throw new Error("Error al obtener el historial");
 
     const data = await response.json();
+    totalPaginas = data.total_pages || 1;
     let historial = data.solicitudes || [];
 
     if (filtro !== "todos") {
       historial = historial.filter(item => item.estado === filtro);
     }
 
-    if (historial.length === 0) {
+    if (historial.length === 0 && !append) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay registros en tu historial</td></tr>';
       return;
     }
 
-    historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
     historial.forEach(item => {
       const row = document.createElement("tr");
-      const fechaFormateada = item.fecha
-        ? new Date(item.fecha).toLocaleDateString("es-ES")
-        : "Sin fecha";
-
+      const fechaFormateada = item.fecha ? new Date(item.fecha).toLocaleDateString("es-ES") : "Sin fecha";
       row.innerHTML = `
         <td>${fechaFormateada}</td>
         <td>${item.tipo_trabajo || "Sin servicio"}</td>
         <td>${item.descripcion || "Sin descripción"}</td>
         <td class="estado-${item.estado}">${item.estado || "Pendiente"}</td>
-        <td>$${item.total || "0"}</td>
+        <td>$${item.total || 0}</td>
       `;
       tbody.appendChild(row);
     });
 
+    // Mostrar u ocultar botón "Cargar más"
+    const btnCargarMas = document.getElementById("cargar-mas");
+    if (btnCargarMas) {
+      btnCargarMas.style.display = (paginaActual < totalPaginas) ? "block" : "none";
+    }
+
   } catch (error) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">${error.message}</td></tr>`;
     console.error(error);
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">${error.message}</td></tr>`;
   }
 }
 
-
+// --------------------
+// Función para filtrar historial
+// --------------------
 function filtrarHistorial() {
   const filtro = document.getElementById("filtro-estado").value;
+  paginaActual = 1;
   cargarHistorial(filtro);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+// --------------------
+// Botón "Cargar más"
+// --------------------
+document.getElementById("cargar-mas")?.addEventListener("click", () => {
+  paginaActual++;
+  cargarHistorial(document.getElementById("filtro-estado")?.value || "todos", true);
+});
+
+// --------------------
+// Inicialización
+// --------------------
+verificarSesion().then(user => {
+  if (!user) return;
   cargarHistorial();
 });

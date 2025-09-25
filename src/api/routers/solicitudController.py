@@ -1,88 +1,106 @@
-from fastapi import APIRouter,HTTPException,status,Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Query
 from database.connectDB import db
-from database.models.solicitudModel import Solicitud,solicitudSchema
-from utils.security import getTokenId,authToken
+from database.models.solicitudModel import Solicitud, solicitudSchema
+from utils.security import getTokenId
 from utils.httpError import errorInterno
-from collections import defaultdict
+from utils.dbHelper import paginar,totalPages
 
-router  = APIRouter(prefix="/solicitud",tags=["Solicitudes"])
+router  = APIRouter(prefix="/solicitud", tags=["Solicitudes"])
 
-@router.get("/",status_code= status.HTTP_200_OK)
-async def obtenerSolicitudes():
+@router.get("/", status_code=status.HTTP_200_OK)
+async def obtenerSolicitudes(
+    page: int = Query(1, ge=1, description="Número de página"),
+    size: int = Query(10, ge=1, le=100)
+):
     try:
-        result = await searchSolicitud()
-        
-        if not result:
+        result = await searchSolicitud(page=page, size=size)
+
+        if not result["data"]:
             return {
-            "solicitudes": []
+                "page": page,
+                "size": size,
+                "total": 0,
+                "total_pages": 1,
+                "solicitudes": []
             }
-        
+
         return {
-            "solicitudes": [solicitudSchema(row) for row in result]
+            "page": page,
+            "size": size,
+            "total": result["total"],
+            "total_pages": result["total_pages"],
+            "solicitudes": [solicitudSchema(row) for row in result["data"]]
         }
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise errorInterno(e)
-    
-@router.get("/pendientes/",status_code= status.HTTP_200_OK)
-async def obtenerPendientes():
-    try:
-        result = await searchSolicitud(option=1)
-        
-        if not result:
-            return {
-            "solicitudes": []
-            }
-        
-        return {
-            "solicitudes": [solicitudSchema(row) for row in result]
-        }
-    
+
     except HTTPException:
         raise
     except Exception as e:
         raise errorInterno(e)
 
-@router.get("/rechazadas/",status_code= status.HTTP_200_OK)
-async def obtenerRechazadas():
+
+@router.get("/pendientes/", status_code=status.HTTP_200_OK)
+async def obtenerPendientes(
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100)
+):
     try:
-        result = await searchSolicitud(option=2)
-        
-        if not result:
-            return {
-            "solicitudes": []
-            }
-        
+        result = await searchSolicitud(option=1, page=page, size=size)
+
         return {
-            "solicitudes": [solicitudSchema(row) for row in result]
+            "page": page,
+            "size": size,
+            "total": result["total"],
+            "total_pages": result["total_pages"],
+            "solicitudes": [solicitudSchema(row) for row in result["data"]]
         }
-    
+
     except HTTPException:
         raise
     except Exception as e:
         raise errorInterno(e)
 
-@router.get("/me/",status_code= status.HTTP_200_OK)
-async def obtenerHistorial(userID :int = Depends(getTokenId)):
+@router.get("/rechazadas/", status_code=status.HTTP_200_OK)
+async def obtenerRechazadas(
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100)
+):
     try:
-        result = await searchSolicitud(userID,option=3)
-        
-        if not result:
-            return {
-            "solicitudes": []
-            }
-        
+        result = await searchSolicitud(option=2, page=page, size=size)
+
         return {
-            "solicitudes": [solicitudSchema(row) for row in result]
+            "page": page,
+            "size": size,
+            "total": result["total"],
+            "total_pages": result["total_pages"],
+            "solicitudes": [solicitudSchema(row) for row in result["data"]]
         }
-    
+
     except HTTPException:
         raise
     except Exception as e:
         raise errorInterno(e)
-      
+    
+
+@router.get("/me/", status_code=status.HTTP_200_OK)
+async def obtenerHistorial(
+    userID: int = Depends(getTokenId),
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100)
+):
+    try:
+        result = await searchSolicitud(page=page, size=size, userID=userID)
+        return {
+            "page": page,
+            "size": size,
+            "total": result["total"],
+            "total_pages": result["total_pages"],
+            "solicitudes": [solicitudSchema(row) for row in result["data"]]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise errorInterno(e)
+
 @router.post("/",status_code=status.HTTP_200_OK)
 async def crearSolicitud(solicitud : Solicitud,user_id : int = Depends(getTokenId)):
     try:
@@ -164,45 +182,54 @@ def direccionesSchema(direcciones)->dict:
         resultado[prov][dist].append(corr)
     return resultado
 
-async def searchSolicitud(id: int | None = None, option: int | None = None):
-    query = """
+async def searchSolicitud(option: int | None = None, page: int = 1, size: int = 10, userID: int | None = None):
+    offset = (page - 1) * size  # paginar(page, size)
+    query = f"""
         SELECT 
-        s.id_solicitud,
-        s.fecha,
-        s.nombre,
-        s.telefono,
-        s.servicio AS tipo_trabajo,
-        s.descripcion,
-        s.origen,
-        s.destino,
-        s.total,
-        s.estado,
-        array_agg(ss.nombre_servicio) AS servicios_adicionales
-    FROM 
-        solicitudes s
-    LEFT JOIN 
-        solicitud_servicios ss ON s.id_solicitud = ss.id_solicitud
+            s.id_solicitud,
+            s.fecha,
+            s.nombre,
+            s.telefono,
+            s.servicio AS tipo_trabajo,
+            s.descripcion,
+            s.origen,
+            s.destino,
+            s.total,
+            s.estado,
+            array_agg(ss.nombre_servicio) AS servicios_adicionales
+        FROM solicitudes s
+        LEFT JOIN solicitud_servicios ss ON s.id_solicitud = ss.id_solicitud
     """
     condicion = {}
 
-    if option == 1:  # pendientes
-        query += " WHERE estado = :estado"
-        condicion = {"estado": "pendiente"}
+    filtros = []
+    if option == 1:
+        filtros.append("estado = :estado")
+        condicion["estado"] = "pendiente"
+    elif option == 2:
+        filtros.append("estado = :estado")
+        condicion["estado"] = "rechazado"
+    if userID is not None:
+        filtros.append("id_usuario = :id_usuario")
+        condicion["id_usuario"] = userID
 
-    elif option == 2:  # rechazadas
-        query += " WHERE estado = :estado"
-        condicion = {"estado": "rechazado"}
+    if filtros:
+        query += " WHERE " + " AND ".join(filtros)
 
-    elif option == 3:  # historial por usuario
-        if id is None:
-            raise ValueError("Se requiere id_usuario cuando option == 3")
-            
-        query += " WHERE id_usuario = :id"
-        condicion = {"id": id}
-    query += """    
-        GROUP BY
-            s.id_solicitud
-        ORDER BY
-            s.fecha DESC;"""
-    result = await db.fetch_all(query, condicion)
-    return result
+    # Aquí hacemos interpolación segura para OFFSET y LIMIT
+    query += f"""
+        GROUP BY s.id_solicitud
+        ORDER BY s.fecha DESC
+        OFFSET {offset}
+        LIMIT {size};
+    """
+    data = await db.fetch_all(query, condicion)
+
+    # Contar total
+    count_query = "SELECT COUNT(*) FROM solicitudes"
+    if filtros:
+        count_query += " WHERE " + " AND ".join(filtros)
+    total = await db.fetch_val(count_query, condicion)
+    total_pages = totalPages(total, size)
+
+    return {"data": data, "total": total, "total_pages": total_pages}
