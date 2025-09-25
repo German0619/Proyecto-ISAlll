@@ -9,42 +9,24 @@ router  = APIRouter(prefix="/solicitud", tags=["Solicitudes"])
 
 @router.get("/", status_code=status.HTTP_200_OK)
 async def obtenerSolicitudes(
+    estado: str = Query("todas", description="Filtrar por estado: 'pendiente', 'rechazado' o 'todas'"),
     page: int = Query(1, ge=1, description="Número de página"),
     size: int = Query(10, ge=1, le=100)
 ):
     try:
-        result = await searchSolicitud(page=page, size=size)
+        # Validar valor del estado
+        estado = estado.lower()
+        if estado not in ["pendiente", "rechazado", "todas"]:
+            raise HTTPException(status_code=400, detail="Estado inválido. Debe ser 'pendiente', 'rechazado' o 'todas'.")
 
-        if not result["data"]:
-            return {
-                "page": page,
-                "size": size,
-                "total": 0,
-                "total_pages": 1,
-                "solicitudes": []
-            }
+        # Mapear el estado a option para searchSolicitud
+        option = None
+        if estado == "pendiente":
+            option = 1
+        elif estado == "rechazado":
+            option = 2
 
-        return {
-            "page": page,
-            "size": size,
-            "total": result["total"],
-            "total_pages": result["total_pages"],
-            "solicitudes": [solicitudSchema(row) for row in result["data"]]
-        }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise errorInterno(e)
-
-
-@router.get("/pendientes/", status_code=status.HTTP_200_OK)
-async def obtenerPendientes(
-    page: int = Query(1, ge=1),
-    size: int = Query(10, ge=1, le=100)
-):
-    try:
-        result = await searchSolicitud(option=1, page=page, size=size)
+        result = await searchSolicitud(option=option, page=page, size=size)
 
         return {
             "page": page,
@@ -58,28 +40,7 @@ async def obtenerPendientes(
         raise
     except Exception as e:
         raise errorInterno(e)
-
-@router.get("/rechazadas/", status_code=status.HTTP_200_OK)
-async def obtenerRechazadas(
-    page: int = Query(1, ge=1),
-    size: int = Query(10, ge=1, le=100)
-):
-    try:
-        result = await searchSolicitud(option=2, page=page, size=size)
-
-        return {
-            "page": page,
-            "size": size,
-            "total": result["total"],
-            "total_pages": result["total_pages"],
-            "solicitudes": [solicitudSchema(row) for row in result["data"]]
-        }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise errorInterno(e)
-    
+ 
 
 @router.get("/me/", status_code=status.HTTP_200_OK)
 async def obtenerHistorial(
@@ -183,7 +144,7 @@ def direccionesSchema(direcciones)->dict:
     return resultado
 
 async def searchSolicitud(option: int | None = None, page: int = 1, size: int = 10, userID: int | None = None):
-    offset = (page - 1) * size  # paginar(page, size)
+    offset = paginar(page,size)
     query = f"""
         SELECT 
             s.id_solicitud,
@@ -227,6 +188,7 @@ async def searchSolicitud(option: int | None = None, page: int = 1, size: int = 
 
     # Contar total
     count_query = "SELECT COUNT(*) FROM solicitudes"
+    
     if filtros:
         count_query += " WHERE " + " AND ".join(filtros)
     total = await db.fetch_val(count_query, condicion)

@@ -10,6 +10,7 @@ router = APIRouter(prefix ="/auth",tags=["Autenticacion"])
 
 crypt = CryptContext(schemes=["bcrypt"])
 
+#loguear usuario
 @router.post("/login/",status_code=status.HTTP_200_OK)
 async def login(form : OAuth2PasswordRequestForm = Depends()):
     try:  
@@ -27,7 +28,8 @@ async def login(form : OAuth2PasswordRequestForm = Depends()):
         raise
     except Exception as e:
         raise errorInterno(e) 
-        
+
+# Registrar nuevo usuario
 @router.post("/register/",status_code=status.HTTP_201_CREATED)
 async def register(user: Usuarios): 
     try:
