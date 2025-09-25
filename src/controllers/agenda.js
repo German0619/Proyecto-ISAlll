@@ -6,11 +6,11 @@ const userType = localStorage.getItem('usuario');
 
       if (userType === 'admin') {
         menu.innerHTML += `
-      <li><a href="/src/solicitudes/solicitudes.html">Solicitudes</a></li>
-      <li><a href="/src/agenda/agenda.html" class="active">Agenda</a></li>
-      <li><a href="/src/inventario/inventario.html">Inventario</a></li>
-      <li><a href="/src/colaboradores/colaboradores.html">Colaboradores</a></li>
-      <li><a href="/src/login/login.html" id="logout">Cerrar sesión</a></li>
+      <li><a href="../views/solicitudes.html">Solicitudes</a></li>
+      <li><a href="../views/agenda.html" class="active">Agenda</a></li>
+      <li><a href="../views/inventario.html">Inventario</a></li>
+      <li><a href="../views/colaboradores.html">Colaboradores</a></li>
+      <li><a href="../views/login.html" id="logout">Cerrar sesión</a></li>
     `;
       } else {
         alert('Acceso no autorizado.');

@@ -7,12 +7,25 @@ document
     const password = document.getElementById("password").value.trim();
 
     if (!email || !password) {
-      alert("Por favor ingresa tu correo y contraseña.");
+      Swal.fire({
+        icon: "warning",
+        title: "Campos incompletos",
+        text: "Por favor ingresa tu correo y contraseña.",
+      });
       return;
     }
 
     try {
-      // Crear FormData para enviar al endpoint
+      // Mostrar loading mientras se hace la petición
+      Swal.fire({
+        title: 'Iniciando sesión...',
+        text: 'Por favor espera',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       const formData = new FormData();
       formData.append("username", email);
       formData.append("password", password);
@@ -22,9 +35,15 @@ document
         body: formData,
       });
 
+      Swal.close(); // Cerrar loading al recibir respuesta
+
       if (!response.ok) {
         const errorData = await response.json();
-        alert(errorData.detail || "Credenciales incorrectas.");
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: errorData.detail || "Credenciales incorrectas.",
+        });
         return;
       }
 
@@ -34,11 +53,25 @@ document
       sessionStorage.setItem("access_token", data.access_token);
       sessionStorage.setItem("usuarioActual", email);
 
-      alert("¡Bienvenid@ de vuelta!");
-      // Redirigir según rol si quieres, aquí asumimos cliente
-      window.location.href = "../views/cotizar.html";
+      Swal.fire({
+        icon: "success",
+        title: "¡Bienvenid@ de vuelta!",
+        showConfirmButton: false,
+        timer: 1500
+      });
+
+      // Redirigir según rol o por defecto a cotizar.html
+      setTimeout(() => {
+        window.location.href = "../views/cotizar.html";
+      }, 1500);
+
     } catch (error) {
+      Swal.close();
       console.error("Error al iniciar sesión:", error);
-      alert("Ocurrió un error al iniciar sesión. Intenta nuevamente.");
+      Swal.fire({
+        icon: "error",
+        title: "Ocurrió un error",
+        text: "Intenta nuevamente.",
+      });
     }
   });

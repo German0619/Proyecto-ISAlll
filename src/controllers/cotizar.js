@@ -1,77 +1,99 @@
+// --------------------
+// Verificar sesión y menú dinámico
+// --------------------
 async function verificarSesion() {
   try {
     const token = sessionStorage.getItem('access_token') || '';
     if (!token) {
-      alert('No tienes autorización para acceder a esta página.');
+      await Swal.fire({
+        icon: 'error',
+        title: 'No autorizado',
+        text: 'No tienes autorización para acceder a esta página.'
+      });
       window.location.href = '../index.html';
       return null;
     }
 
     const response = await fetch('http://localhost:8000/auth/me/', {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
     });
 
     if (!response.ok) {
-      alert('No tienes autorización para acceder a esta página.');
+      await Swal.fire({
+        icon: 'error',
+        title: 'No autorizado',
+        text: 'No tienes autorización para acceder a esta página.'
+      });
       window.location.href = '../index.html';
       return null;
     }
 
     const data = await response.json();
-    // data debería incluir algo como { id_usuario, nombre, rol, ... }
     return data;
-
   } catch (error) {
     console.error('Error al verificar sesión:', error);
-    alert('No tienes autorización para acceder a esta página.');
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No tienes autorización para acceder a esta página.'
+    });
     window.location.href = '../index.html';
     return null;
   }
 }
 
-// Primero obtenemos el usuario logueado
+// Inicializar menú dinámico y logout
 verificarSesion().then(user => {
-  if (user) {
-    console.log('Usuario logueado:', user);
-    const menu = document.getElementById('menu-lista');
-    if (menu) {
-      menu.innerHTML = '<li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>';
+  if (!user) return;
 
-      if (user.rol === 'admin') {
-        menu.innerHTML += `
-          <li><a href="../view/solicitudes.html">Solicitudes</a></li>
-          <li><a href="../view/agenda/agenda.html">Agenda</a></li>
-          <li><a href="../view/inventario/inventario.html">Inventario</a></li>
-          <li><a href="../view/colaboradores/colaboradores.html">Colaboradores</a></li>
-          <li><a href="../view/login/login.html" id="logout">Cerrar sesión</a></li>
-        `;
-      } else if (user.rol === 'cliente') {
-        menu.innerHTML += `
-          <li><a href="../view/cotizar/cotizar.html" class="active">Cotizar</a></li>
-          <li><a href="../view/historial/historial.html">Mi Historial</a></li>
-          <li><a href="../view/login/login.html" id="logout">Cerrar sesión</a></li>
-        `;
-      } else {
-        menu.innerHTML += `
-          <li><a href="../index.html">Inicio</a></li>
-          <li><a href="../view/login.html">Iniciar sesión</a></li>
-        `;
-      }
-    }
+  const menu = document.getElementById('menu-lista');
+  if (menu) {
+    menu.innerHTML = '<li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>';
 
-    const logout = document.getElementById('logout');
-    if (logout) {
-      logout.addEventListener('click', function () {
-        sessionStorage.removeItem('access_token');
-        window.location.href = '../index.html';
-      });
+    if (user.rol === 'admin') {
+      menu.innerHTML += `
+        <li><a href="../views/solicitudes.html">Solicitudes</a></li>
+        <li><a href="../views/agenda.html">Agenda</a></li>
+        <li><a href="../views/inventario.html">Inventario</a></li>
+        <li><a href="../views/colaboradores.html">Colaboradores</a></li>
+        <li><a href="#" id="logout">Cerrar sesión</a></li>
+      `;
+    } else if (user.rol === 'cliente') {
+      menu.innerHTML += `
+        <li><a href="../views/cotizar.html" class="active">Cotizar</a></li>
+        <li><a href="../views/historial.html">Mi Historial</a></li>
+        <li><a href="#" id="logout">Cerrar sesión</a></li>
+      `;
+    } else {
+      menu.innerHTML += `
+        <li><a href="../index.html">Inicio</a></li>
+        <li><a href="../views/login.html">Iniciar sesión</a></li>
+      `;
     }
   }
+
+  // Logout con SweetAlert2
+  const logout = document.getElementById('logout');
+  if (logout) {
+    logout.addEventListener('click', async () => {
+      const result = await Swal.fire({
+        title: 'Cerrar sesión',
+        text: "¿Estás seguro que deseas salir?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, salir',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+        sessionStorage.removeItem('access_token');
+        window.location.href = '../index.html';
+      }
+    });
+  }
 });
+
 
     // Acordeón
     const acc = document.getElementsByClassName("accordion");
@@ -270,90 +292,101 @@ verificarSesion().then(user => {
     distritoLlegada.addEventListener("change", cargarCorregimientosLlegada);
 
     cargarProvinciasLlegada();
+// --------------------
+// Funciones de cálculo y solicitud (con SweetAlert2)
+// --------------------
+function calcularTotalServicios() {
+  let total = 0;
+  const serviciosDetalle = [];
+  Object.keys(servicioValores).forEach(id => {
+    const checkbox = document.getElementById(id);
+    if (checkbox && checkbox.checked) {
+      const valor = servicioValores[id];
+      total += valor;
+      const label = document.querySelector(`label[for="${id}"]`) || { textContent: id };
+      serviciosDetalle.push({ nombre: label.textContent.trim(), valor });
+    }
+  });
+  return { total, serviciosDetalle };
+}
 
-    async function guardarSolicitud() {
-      const cliente = document.getElementById("nombreCliente").value; // opcional para mostrar
-      const numero = document.getElementById("numeroCliente").value; // número de teléfono
-      const fechaServicio = document.getElementById("fechaServicio").value;
-      const tipoTrabajo = document.getElementById("tiposTrabajos").value;
+async function guardarSolicitud() {
+  const cliente = document.getElementById("nombreCliente").value;
+  const numero = document.getElementById("numeroCliente").value;
+  const fechaISO = new Date(fechaServicio).toISOString();
 
-      const direccionPartida = `${document.getElementById("provincia-partida").value}, ${document.getElementById("distrito-partida").value}, ${document.getElementById("corregimiento-partida").value}, ${document.getElementById("direccionPartida").value}`;
-      const direccionLlegada = `${document.getElementById("provincia-llegada").value}, ${document.getElementById("distrito-llegada").value}, ${document.getElementById("corregimiento-llegada").value}, ${document.getElementById("direccionLlegada").value}`;
+  const tipoTrabajo = document.getElementById("tiposTrabajos").value;
 
-      const descripcion = document.getElementById("descripcion").value;
+  const direccionPartida = `${document.getElementById("provincia-partida").value}, ${document.getElementById("distrito-partida").value}, ${document.getElementById("corregimiento-partida").value}, ${document.getElementById("direccionPartida").value}`;
+  const direccionLlegada = `${document.getElementById("provincia-llegada").value}, ${document.getElementById("distrito-llegada").value}, ${document.getElementById("corregimiento-llegada").value}, ${document.getElementById("direccionLlegada").value}`;
 
-      const { total: totalServicios, serviciosDetalle } = calcularTotalServicios();
-      const costoMano = costoManoObra[tipoTrabajo] || 0;
-      const adicional = costoAdicionalTrabajo[tipoTrabajo] || 0;
-      const sumaFinal = totalServicios + costoMano + adicional;
+  const descripcion = document.getElementById("descripcion").value;
 
-      const solicitud = {
-        id_solicitud: 0,                // siempre enviar 0 al crear
-        fecha: fechaServicio,
-        servicio: tipoTrabajo,
-        descripcion,
-        origen: direccionPartida,
-        destino: direccionLlegada,
-        total: sumaFinal,
-        telefono: numero,               
-        servicios: serviciosDetalle.map(s => s.nombre)
-      };
+  const { total: totalServicios, serviciosDetalle } = calcularTotalServicios();
+  const costoMano = costoManoObra[tipoTrabajo] || 0;
+  const adicional = costoAdicionalTrabajo[tipoTrabajo] || 0;
+  const sumaFinal = totalServicios + costoMano + adicional;
 
-      try {
-        const response = await fetch('http://localhost:8000/solicitud/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionStorage.getItem('access_token') || ''}`
-          },
-          body: JSON.stringify(solicitud)
-        });
+  const solicitud = {
+    id_solicitud: 0, 
+    telefono: numero,
+    fecha: fechaISO,
+    servicio: tipoTrabajo,
+    descripcion: descripcion || null,
+    origen: direccionPartida,
+    destino: direccionLlegada,
+    total: sumaFinal,
+    servicios: serviciosDetalle.map(s => s.nombre)
+  };
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || "Error al enviar la solicitud");
-        }
+  try {
+    Swal.fire({
+      title: 'Enviando solicitud...',
+      text: 'Por favor espera',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    });
 
-        const data = await response.json();
+    const response = await fetch('http://localhost:8000/solicitud/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem('access_token') || ''}`
+      },
+      body: JSON.stringify(solicitud)
+    });
 
-        const contenido = `
-          <p><strong>Nombre:</strong> ${cliente}</p>
-          <p><strong>Contacto:</strong> ${numero}</p>
-          <p><strong>Fecha del Servicio:</strong> ${fechaServicio}</p>
-          <p><strong>Tipo de Trabajo:</strong> ${tipoTrabajo}</p>
-          <h4>Servicios Adicionales:</h4>
-          <ul>${serviciosDetalle.map(servicio => `<li>${servicio.nombre}: $${servicio.valor}</li>`).join("")}</ul>
-          <p><strong>Total:</strong> $${sumaFinal}</p>
-          <p style="color: green; font-weight: bold;">¡Solicitud enviada correctamente! ID: ${data.solicitud_id}</p>
-        `;
+    Swal.close();
 
-        document.getElementById("modal-content").innerHTML = contenido;
-        document.getElementById("modal").style.display = "flex";
-        document.getElementById("cotizarForm").reset();
-
-      } catch (error) {
-        alert(error.message);
-      }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Error al enviar la solicitud");
     }
 
-    function calcularTotalServicios() {
-      let total = 0;
-      const serviciosDetalle = [];
-      Object.keys(servicioValores).forEach(id => {
-        const checkbox = document.getElementById(id);
-        if (checkbox && checkbox.checked) {
-          const valor = servicioValores[id];
-          total += valor;
-          const label = document.querySelector(`label[for="${id}"]`) || { textContent: id };
-          serviciosDetalle.push({
-            nombre: label.textContent.trim(),
-            valor: valor
-          });
-        }
-      });
-      return { total, serviciosDetalle };
-    }
+    const data = await response.json();
 
-    function cerrarModal() {
-      document.getElementById("modal").style.display = "none";
-    }
+    Swal.fire({
+      icon: 'success',
+      title: '¡Solicitud enviada!',
+      html: `
+        <p><strong>Nombre:</strong> ${cliente}</p>
+        <p><strong>Contacto:</strong> ${numero}</p>
+        <p><strong>Fecha del Servicio:</strong> ${fechaServicio}</p>
+        <p><strong>Tipo de Trabajo:</strong> ${tipoTrabajo}</p>
+        <h4>Servicios Adicionales:</h4>
+        <ul>${serviciosDetalle.map(s => `<li>${s.nombre}: $${s.valor}</li>`).join("")}</ul>
+        <p><strong>Total:</strong> $${sumaFinal}</p>
+        <p style="color: green; font-weight: bold;">ID de Solicitud: ${data.solicitud_id}</p>
+      `
+    });
+
+    document.getElementById("cotizarForm").reset();
+
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.message
+    });
+  }
+}

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import authController,solicitudController,collaboradoresControllers
+from routers import authController,solicitudController,inventarioController,collaboradoresController
 from fastapi.middleware.cors import CORSMiddleware
 from database.connectDB import connect,disconnect
 from contextlib import asynccontextmanager
@@ -17,8 +17,8 @@ app = FastAPI(lifespan=lifespan)
 # Registrar rutas
 app.include_router(authController.router)
 app.include_router(solicitudController.router)
-app.include_router(collaboradoresControllers.router)
-
+app.include_router(collaboradoresController.router)
+app.include_router(inventarioController.router)
 
 app.add_middleware(
     CORSMiddleware,

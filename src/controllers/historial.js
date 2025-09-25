@@ -1,18 +1,18 @@
 const userType = localStorage.getItem("usuario");
 if (!userType || userType === "admin") {
   alert("Acceso no autorizado.");
-  window.location.href = "/src/index.html";
+  window.location.href = "../index.html";
 }
 const menu = document.querySelector(".menu ul");
 if (menu) {
-  menu.innerHTML = '<li><img src="/public/img/logo.png" alt="Logo" class="logo"></li>';
+  menu.innerHTML = '<li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>';
 
   if (userType === "cliente") {
     menu.innerHTML += `
-      <li><a href="/src/index.html">Inicio</a></li>
-      <li><a href="/src/historial/historial.html" class="active">Mi Historial</a></li>
-      <li><a href="/src/cotizar/cotizar.html">Nueva Cotización</a></li>
-      <li><a href="/src/login/login.html" id="logout">Cerrar sesión</a></li>
+      <li><a href="../index.html">Inicio</a></li>
+      <li><a href="../views/historial.html" class="active">Mi Historial</a></li>
+      <li><a href="../views/cotizar.html">Nueva Cotización</a></li>
+      <li><a href="../views/login.html" id="logout">Cerrar sesión</a></li>
     `;
   }
 }
@@ -21,7 +21,7 @@ const logout = document.getElementById("logout");
 if (logout) {
   logout.addEventListener("click", function () {
     localStorage.removeItem("usuario");
-    window.location.href = "/src/login/login.html";
+    window.location.href = "../views/login.html";
   });
 }
 

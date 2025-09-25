@@ -66,13 +66,11 @@ async def eliminarColaborador(id:int,_: bool = Depends(isAdmin)):
                 DELETE FROM colaboradores WHERE id_colaborador =:id_colaborador
             """
             await db.execute(query,{"id_colaborador":id})
-            
-            if not await searchColaboradores(id) is None:
-                raise errorInterno("Error al eliminar el colaborador,el colaborador no fue eliminado")    
+
             return {
                 "detail":"Colaborador Eliminado con Exito"
             }
     except HTTPException:
         raise
-    except Exception as e :
-        raise errorInterno(e)
+    except Exception:
+        raise errorInterno("Error al eliminar el colaborador,el colaborador no fue eliminado")
