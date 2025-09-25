@@ -1,26 +1,40 @@
-from fastapi import APIRouter,HTTPException,status,Depends
+from fastapi import APIRouter,HTTPException,status,Depends,Query
 from database.connectDB import db
 from database.models.inventarioModel import Inventario,inventarioSchema
 from utils.security import isAdmin
 from utils.httpError import errorInterno
 from utils.infoVerify import searchHerramienta
+from utils.dbHelper import paginar,totalPages
 
 router = APIRouter(prefix="/Inventario",tags=["Inventario"])
 
 @router.get("/",status_code=status.HTTP_200_OK)
-async def obtenerInventario(_:bool = Depends(isAdmin)):
+async def obtenerInventario(
+    page: int = Query(1, ge=1, description="Número de página"),
+    size: int = Query(10, ge=1, le=100),
+    _: bool = Depends(isAdmin)
+):
+    offset = paginar(page,size)
     try:
         query = """
             SELECT id_item,nombre,cantidad FROM inventario
+            OFFSET :offset LIMIT :size
         """
-        inventario = await db.fetch_all(query)
+        inventario = await db.fetch_all(query,{"offset":offset,"size":size})
         
         if not inventario:
             return {
+                "page": page,
+                "size": size,
+                "total_pages": 0,
                 "inventario": []
             }
+        total = await db.fetch_val("SELECT COUNT(*) FROM inventario")
         return {
-            "inventario": [ inventarioSchema(row) for row in inventario]
+            "page": page,
+            "size": size,
+            "total_pages": totalPages(total,size),
+            "inventario": [inventarioSchema(row) for row in inventario]
         }
     except HTTPException:
         raise

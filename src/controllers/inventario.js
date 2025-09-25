@@ -103,30 +103,49 @@ verificarSesion().then(user => {
     }
   }
 });
-
-// --------------------
-// Inventario con API
-// --------------------
 const API_URL = "http://localhost:8000/Inventario";
 const tbody = document.getElementById('inventario-body');
 let inventario = [];
 let editItemId = null;
 let token = "";
+let paginaActual = 1;
+const size = 10;
+let totalPaginas = 1;
 
-// Cargar inventario desde API
-async function cargarInventario() {
+// --------------------
+// Cargar inventario con paginación
+// --------------------
+async function cargarInventario(append = false) {
+  if (!append) tbody.innerHTML = "";
+
   try {
-    const response = await fetch(`${API_URL}/`, {
+    const url = new URL(API_URL + "/");
+    url.searchParams.append("page", paginaActual);
+    url.searchParams.append("size", size);
+
+    const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
     if (!response.ok) throw new Error("Error al cargar inventario");
 
     const data = await response.json();
-    inventario = data.inventario || [];
+    totalPaginas = data.total_pages || 1;
+    let items = data.inventario || [];
 
-    tbody.innerHTML = "";
-    inventario.forEach((item) => {
+    if (!append) {
+      tbody.innerHTML = "";      // limpiar tabla
+      inventario = items;        // reemplazar array
+    } else {
+      inventario = inventario.concat(items); // agregar siguientes
+    }
+
+    if (items.length === 0 && !append) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay herramientas registradas</td></tr>';
+      return;
+    }
+
+    items.forEach((item) => {
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${item.nombre}</td>
@@ -138,11 +157,42 @@ async function cargarInventario() {
       `;
       tbody.appendChild(row);
     });
+
+    // Mostrar u ocultar botón "Cargar más"
+    const btnCargarMas = document.getElementById("cargar-mas");
+    if (btnCargarMas) {
+      btnCargarMas.style.display = (paginaActual < totalPaginas) ? "block" : "none";
+    }
+
   } catch (error) {
     console.error("Error:", error);
-    alert("No se pudo cargar el inventario.");
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">${error.message}</td></tr>`;
   }
 }
+
+// --------------------
+// Botón "Cargar más"
+// --------------------
+document.getElementById("cargar-mas")?.addEventListener("click", () => {
+  if (paginaActual < totalPaginas) {
+    paginaActual++;
+    cargarInventario(true);
+  }
+});
+
+// --------------------
+// Inicialización con sesión
+// --------------------
+verificarSesion().then(user => {
+  if (!user) return;
+
+  token = sessionStorage.getItem('access_token');
+  if (user.rol === 'admin') {
+    paginaActual = 1;
+    cargarInventario();
+  }
+});
+
 
 // Abrir modal para agregar
 function abrirModalAgregar() {
@@ -211,6 +261,7 @@ async function guardarHerramienta() {
     }
 
     cerrarModal();
+    paginaActual = 1; // Reiniciar página
     await cargarInventario();
     await Swal.fire({
       icon: 'success',
@@ -250,7 +301,7 @@ async function eliminarHerramienta(id_item) {
       const err = await response.json();
       throw new Error(err.detail || "Error al eliminar la herramienta");
     }
-
+    paginaActual = 1; // Reiniciar página
     await cargarInventario();
     await Swal.fire({
       icon: 'success',

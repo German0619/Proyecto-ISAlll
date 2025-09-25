@@ -20,7 +20,7 @@
   <main>
     <h1>Inventario de Herramientas</h1>
 
-    <div class="table-container">
+    <div class="table-container" style="max-height:500px; overflow-y:auto;">
       <table>
         <thead>
           <tr>
@@ -34,6 +34,7 @@
         </tbody>
       </table>
     </div>
+    <button id="cargar-mas" style="display:none;">Cargar más</button>
     <button class="add-button" onclick="abrirModalAgregar()">Añadir Nueva Herramienta</button>
   </main>
 </div>
