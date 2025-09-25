@@ -313,7 +313,18 @@ function calcularTotalServicios() {
 async function guardarSolicitud() {
   const cliente = document.getElementById("nombreCliente").value;
   const numero = document.getElementById("numeroCliente").value;
-  const fechaISO = new Date(fechaServicio).toISOString();
+
+  // ✅ Corregido
+  const fechaInput = document.getElementById("fechaServicio").value;
+  if (!fechaInput) {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Falta la fecha',
+      text: 'Por favor selecciona una fecha para el servicio.'
+    });
+    return;
+  }
+  const fechaISO = new Date(fechaInput).toISOString();
 
   const tipoTrabajo = document.getElementById("tiposTrabajos").value;
 
@@ -328,8 +339,8 @@ async function guardarSolicitud() {
   const sumaFinal = totalServicios + costoMano + adicional;
 
   const solicitud = {
-    id_solicitud: 0, 
     telefono: numero,
+    nombre: cliente,
     fecha: fechaISO,
     servicio: tipoTrabajo,
     descripcion: descripcion || null,
@@ -338,6 +349,8 @@ async function guardarSolicitud() {
     total: sumaFinal,
     servicios: serviciosDetalle.map(s => s.nombre)
   };
+
+  console.log(solicitud);
 
   try {
     Swal.fire({
@@ -371,7 +384,7 @@ async function guardarSolicitud() {
       html: `
         <p><strong>Nombre:</strong> ${cliente}</p>
         <p><strong>Contacto:</strong> ${numero}</p>
-        <p><strong>Fecha del Servicio:</strong> ${fechaServicio}</p>
+        <p><strong>Fecha del Servicio:</strong> ${new Date(fechaISO).toLocaleDateString()}</p>
         <p><strong>Tipo de Trabajo:</strong> ${tipoTrabajo}</p>
         <h4>Servicios Adicionales:</h4>
         <ul>${serviciosDetalle.map(s => `<li>${s.nombre}: $${s.valor}</li>`).join("")}</ul>

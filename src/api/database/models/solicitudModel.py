@@ -4,7 +4,8 @@ from datetime import datetime
 
 class Solicitud(BaseModel):
     id_solicitud : Optional[int] = None
-    telefono: str 
+    telefono: str
+    nombre:str
     fecha: datetime
     servicio: str
     descripcion: Optional[str] = None
@@ -12,3 +13,18 @@ class Solicitud(BaseModel):
     destino: str
     total: float
     servicios: List[str]
+
+def solicitudSchema(data) -> dict:
+    return {
+        "id_solicitud": data.id_solicitud,
+        "telefono": data.telefono,
+        "nombre": data.nombre,
+        "fecha": str(data.fecha),
+        "servicio": data.tipo_trabajo,  # ojo: en tu SQL es alias "tipo_trabajo"
+        "descripcion": data.descripcion,
+        "origen": data.origen,
+        "destino": data.destino,
+        "total": data.total,
+        "estado": data.estado,
+        "servicios": data.servicios_adicionales  # ahora sí existe
+    }

@@ -78,7 +78,7 @@ Solo seria pegar el comando en terminal  y ya pero tendran las librerias de todo
    - Escribir en la terminal `pip install -r requirements.txt`
 
 ## Inicializar el servidor de la Api (Uvicorn)
-En la terminar debes ir a la ubicacion del archivo Main.py, para eso puedes usar el comando cd src/api y luego ejecutar el siguiente comando:
+En la terminal debes ir a la ubicacion del archivo Main.py, para eso puedes usar el comando `cd src/api` y luego ejecutar el siguiente comando:
 `uvicorn Main:app --reload`
 
 > **Nota:** Es necesario tener el servidor encendido sino el proyecto web no funcionara.
