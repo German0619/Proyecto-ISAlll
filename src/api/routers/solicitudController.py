@@ -44,12 +44,27 @@ async def obtenerSolicitudes(
 
 @router.get("/me/", status_code=status.HTTP_200_OK)
 async def obtenerHistorial(
-    userID: int = Depends(getTokenId),
-    page: int = Query(1, ge=1),
-    size: int = Query(10, ge=1, le=100)
+    estado: str = Query("todas", description="Filtrar por estado: 'pendiente', 'rechazado' o 'todas'"),
+    page: int = Query(1, ge=1, description="Número de página"),
+    size: int = Query(10, ge=1, le=100),
+    userID: int = Depends(getTokenId)
 ):
     try:
-        result = await searchSolicitud(page=page, size=size, userID=userID)
+        # Validar valor del estado
+        estado = estado.lower()
+        if estado not in ["pendiente", "rechazado", "todas"]:
+            raise HTTPException(status_code=400, detail="Estado inválido. Debe ser 'pendiente', 'rechazado' o 'todas'.")
+
+        # Mapear el estado a option para searchSolicitud
+        option = None
+        if estado == "pendiente":
+            option = 1
+        elif estado == "rechazado":
+            option = 2
+        # Si es "todas", option queda None y traerá todas las solicitudes del usuario
+
+        result = await searchSolicitud(option=option, page=page, size=size, userID=userID)
+
         return {
             "page": page,
             "size": size,
@@ -57,10 +72,12 @@ async def obtenerHistorial(
             "total_pages": result["total_pages"],
             "solicitudes": [solicitudSchema(row) for row in result["data"]]
         }
+
     except HTTPException:
         raise
     except Exception as e:
         raise errorInterno(e)
+
 
 @router.post("/",status_code=status.HTTP_200_OK)
 async def crearSolicitud(solicitud : Solicitud,user_id : int = Depends(getTokenId)):
