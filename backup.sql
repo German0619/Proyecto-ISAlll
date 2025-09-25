@@ -18,6 +18,13 @@ CREATE TABLE inventario (
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+INSERT INTO inventario (nombre, cantidad)
+VALUES
+    ('Camión grúa', 2),
+    ('Cuerda de seguridad', 10),
+    ('Carretilla', 5),
+    ('Gato hidráulico', 3),
+    ('Conos de señalización', 15);
 
 -- Tabla colaboradores
 CREATE TABLE colaboradores (
