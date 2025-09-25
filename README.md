@@ -64,7 +64,8 @@ Puedes instalar las librerías necesarias de dos formas:
    Instalar las dependencias:
    - Escribir en la terminal `pip install -r requirements.txt`
 ### Opción 2: Instalación global (no recomendado)
-Solo no seria pegar el comando en temrinal y ya pero tendran las librerias de todo el sistema
+Solo seria pegar el comando en terminal  y ya pero tendran las librerias de todo el sistema
+
    Instalar las dependencias:
    - Escribir en la terminal `pip install -r requirements.txt`
 
