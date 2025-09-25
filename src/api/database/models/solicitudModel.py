@@ -20,7 +20,7 @@ def solicitudSchema(data) -> dict:
         "telefono": data.telefono,
         "nombre": data.nombre,
         "fecha": str(data.fecha),
-        "servicio": data.tipo_trabajo,  # ojo: en tu SQL es alias "tipo_trabajo"
+        "tipo_trabajo": data.tipo_trabajo,  # ojo: en tu SQL es alias "tipo_trabajo"
         "descripcion": data.descripcion,
         "origen": data.origen,
         "destino": data.destino,

@@ -11,7 +11,7 @@ class Colaborador(BaseModel):
 
 def colaboradorSchema(colaborador)->dict:
     return {
-        "id":colaborador.id_colaborador,
+        "id_colaborador":colaborador.id_colaborador,
         "nombre":colaborador.nombre,
         "especialidad":colaborador.especialidad,
         "pago_hora":colaborador.pago_hora,

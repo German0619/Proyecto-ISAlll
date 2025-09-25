@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Colaboradores</title>
   <link rel="stylesheet" href="../styles/colaboradores.css">
+  <style>
+  #tabla-container {
+    max-height: 400px; /* Ajusta la altura deseada */
+    overflow-y: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    padding: 8px;
+    border: 1px solid #ddd;
+  }
+</style>
 </head>
 <body>
 
@@ -18,21 +32,23 @@
   <main>
     <h1>Listado de Colaboradores</h1>
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Identificación</th>
-            <th>Especialidad</th>
-            <th>Pago x Hora</th>
-          </tr>
-        </thead>
-        <tbody id="colaboradores-body">
-          <!-- Colaboradores cargados aquí -->
-        </tbody>
-      </table>
-    </div>
+    <div id="tabla-container" style="max-height: 400px; overflow-y: auto;">
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>ID</th>
+        <th>Especialidad</th>
+        <th>Pago/Hora</th>
+      </tr>
+    </thead>
+    <tbody id="colaboradores-body"></tbody>
+  </table>
+</div>
+
+<button id="cargar-mas">Cargar más</button>
+
+
     <div class="button-group">
       <button class="add-button" id="btn-agregar">Agregar Colaborador</button>
       <button class="delete-button" id="btn-eliminar">Eliminar Colaborador</button>
@@ -59,7 +75,7 @@
   <button class="confirm-button" id="confirmar-eliminar">Eliminar</button>
   <button class="cancel-button" onclick="cerrarModal('eliminar')">Cancelar</button>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../controllers/colaboradores.js"></script>
 
 </body>
