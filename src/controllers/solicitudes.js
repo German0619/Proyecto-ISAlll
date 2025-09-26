@@ -126,7 +126,7 @@ async function renderSolicitudes(contenedorId, estado) {
         <p><strong>Contacto:</strong> ${solicitud.telefono || "No especificado"}</p>
         <p><strong>Fecha:</strong> ${fechaFormateada}</p>
         <p><strong>Servicio:</strong> ${solicitud.tipo_trabajo}</p>
-        <p><strong>Descripción:</strong> ${solicitud.descripcion}</p>
+        <p><strong>Descripción:</strong> ${solicitud.descripcion || "Sin descripcion"}</p>
         <p><strong>Origen:</strong> ${solicitud.origen}</p>
         <p><strong>Destino:</strong> ${solicitud.destino}</p>
         <p><strong>Total cotizado:</strong> $${solicitud.total}</p>
