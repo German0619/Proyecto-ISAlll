@@ -1,153 +1,256 @@
-const userType = localStorage.getItem("usuario");
-const menu = document.querySelector(".menu ul");
+const token = sessionStorage.getItem("access_token") || "";
 
-if (menu) {
-  menu.innerHTML =
-    '<li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>';
+// --------------------
+// Variables de paginación y control
+// --------------------
+let paginaPendientes = 1;
+let paginaRechazadas = 1;
+const tamañoPagina = 10;
+let cargandoPendientes = false;
+let cargandoRechazadas = false;
 
-  if (userType === "admin") {
-    menu.innerHTML += `
-      <li><a href="../views/solicitudes.html" class="active">Solicitudes</a></li>
-      <li><a href="../views/agenda.html">Agenda</a></li>
-      <li><a href="../views/inventario.html">Inventario</a></li>
-      <li><a href="../views/colaboradores.html">Colaboradores</a></li>
-      <li><a href="../views/login.html" id="logout">Cerrar sesión</a></li>
-    `;
-  } else {
-    alert("Acceso no autorizado.");
-    window.location.href = "../index.html";
-  }
-}
+// --------------------
+// Verificar sesión y usuario (solo admin)
+// --------------------
+async function verificarSesion() {
+  try {
+    if (!token) throw new Error("No token");
 
-const logout = document.getElementById("logout");
-if (logout) {
-  logout.addEventListener("click", function () {
-    localStorage.removeItem("usuario");
-    window.location.href = "../views/login/login.html";
-  });
-}
-
-// Obtener solicitudes de localStorage
-let solicitudes = JSON.parse(localStorage.getItem("solicitudes")) || [];
-
-const pendientes = document.getElementById("pendientes-container");
-const rechazadas = document.getElementById("rechazadas-container");
-
-function cargarSolicitudes() {
-  pendientes.innerHTML = "";
-  rechazadas.innerHTML = "";
-
-  if (solicitudes.length === 0) {
-    pendientes.innerHTML =
-      '<p class="sin-solicitudes">No hay solicitudes pendientes</p>';
-    rechazadas.innerHTML =
-      '<p class="sin-solicitudes">No hay solicitudes rechazadas</p>';
-    return;
-  }
-
-  solicitudes.forEach((solicitud) => {
-    const card = document.createElement("div");
-    card.className = "solicitud-card";
-
-    // Formatear fecha para mostrarla mejor
-    const fechaFormateada = solicitud.fecha
-      ? new Date(solicitud.fecha).toLocaleDateString("es-ES")
-      : "Sin fecha";
-
-    card.innerHTML = `
-      <h3>${solicitud.cliente}</h3>
-      <p><strong>Contacto:</strong> ${
-        solicitud.contacto || "No especificado"
-      }</p>
-      <p><strong>Fecha:</strong> ${fechaFormateada}</p>
-      <p><strong>Servicio:</strong> ${solicitud.servicio}</p>
-      <p><strong>Descripción:</strong> ${solicitud.descripcion}</p>
-      <p><strong>Origen:</strong> ${solicitud.origen}</p>
-      <p><strong>Destino:</strong> ${solicitud.destino}</p>
-      <p><strong>Total cotizado:</strong> $${solicitud.total}</p>
-    `;
-
-    if (solicitud.estado === "pendiente") {
-      const aceptarBtn = document.createElement("button");
-      aceptarBtn.textContent = "Aceptar";
-      aceptarBtn.className = "aceptar";
-      aceptarBtn.onclick = () => aceptarSolicitud(solicitud.id);
-
-      const rechazarBtn = document.createElement("button");
-      rechazarBtn.textContent = "Rechazar";
-      rechazarBtn.className = "rechazar";
-      rechazarBtn.onclick = () => rechazarSolicitud(solicitud.id);
-
-      card.appendChild(aceptarBtn);
-      card.appendChild(rechazarBtn);
-
-      pendientes.appendChild(card);
-    } else if (solicitud.estado === "rechazada") {
-      const eliminarBtn = document.createElement("button");
-      eliminarBtn.textContent = "Eliminar";
-      eliminarBtn.className = "eliminar";
-      eliminarBtn.onclick = () => eliminarSolicitud(solicitud.id);
-
-      card.appendChild(eliminarBtn);
-      rechazadas.appendChild(card);
-    }
-  });
-}
-
-function aceptarSolicitud(id) {
-  let solicitudes = JSON.parse(localStorage.getItem("solicitudes")) || [];
-  let historial = JSON.parse(localStorage.getItem("historial")) || [];
-
-  const solicitudIndex = solicitudes.findIndex((s) => s.id === id);
-  if (solicitudIndex !== -1) {
-    solicitudes[solicitudIndex].estado = "aceptada";
-    localStorage.setItem("solicitudes", JSON.stringify(solicitudes));
-
-    const historialIndex = historial.findIndex((h) => h.id === id);
-    if (historialIndex !== -1) {
-      historial[historialIndex].estado = "aceptada";
-      localStorage.setItem("historial", JSON.stringify(historial));
-    }
-
-    let agenda = JSON.parse(localStorage.getItem("agenda")) || [];
-    agenda.push({
-      ...solicitudes[solicitudIndex],
-      estado: "agendado",
+    const response = await fetch("http://localhost:8000/auth/me/", {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
     });
-    localStorage.setItem("agenda", JSON.stringify(agenda));
 
-    alert("Solicitud aceptada y agregada a la agenda");
-    cargarSolicitudes();
-  }
-}
+    if (!response.ok) throw new Error("No autorizado");
 
-function rechazarSolicitud(id) {
-  let solicitudes = JSON.parse(localStorage.getItem("solicitudes")) || [];
-  let historial = JSON.parse(localStorage.getItem("historial")) || [];
+    const user = await response.json();
 
-  const solicitudIndex = solicitudes.findIndex((s) => s.id === id);
-  if (solicitudIndex !== -1) {
-    solicitudes[solicitudIndex].estado = "rechazada";
-    localStorage.setItem("solicitudes", JSON.stringify(solicitudes));
-
-    const historialIndex = historial.findIndex((h) => h.id === id);
-    if (historialIndex !== -1) {
-      historial[historialIndex].estado = "rechazada";
-      localStorage.setItem("historial", JSON.stringify(historial));
+    if (user.rol !== "admin") {
+      await Swal.fire({ 
+        icon: "error", 
+        title: "Acceso no autorizado", 
+        text: "Solo los administradores pueden acceder a esta página." 
+      });
+      window.location.href = "../index.html";
+      return null;
     }
 
-    cargarSolicitudes();
+    // Configurar menú dinámico
+    const menu = document.getElementById("menu-lista");
+    if (menu) {
+      menu.innerHTML = `
+        <li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>
+        <li><a href="../views/solicitudes.html" class="active">Solicitudes</a></li>
+        <li><a href="../views/agenda.html">Agenda</a></li>
+        <li><a href="../views/inventario.html">Inventario</a></li>
+        <li><a href="../views/colaboradores.html">Colaboradores</a></li>
+        <li><a href="../views/login.html" id="logout">Cerrar sesión</a></li>
+      `;
+    }
+
+    document.getElementById("logout")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const result = await Swal.fire({
+        title: "¿Cerrar sesión?",
+        text: "¿Seguro que quieres cerrar sesión?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, cerrar sesión",
+        cancelButtonText: "Cancelar"
+      });
+      if (result.isConfirmed) {
+        sessionStorage.removeItem("access_token");
+        await Swal.fire({ icon: "success", title: "Sesión cerrada", text: "Has cerrado sesión correctamente." });
+        window.location.href = "../index.html";
+      }
+    });
+
+    return user;
+  } catch (err) {
+    console.error(err);
+    await Swal.fire({ icon: "error", title: "No autorizado", text: "No tienes autorización para acceder." });
+    window.location.href = "../index.html";
+    return null;
   }
 }
 
-function eliminarSolicitud(id) {
-  const solicitudIndex = solicitudes.findIndex((s) => s.id === id);
-  if (solicitudIndex !== -1) {
-    solicitudes.splice(solicitudIndex, 1);
-    localStorage.setItem("solicitudes", JSON.stringify(solicitudes));
-    cargarSolicitudes();
+// --------------------
+// Obtener solicitudes desde API
+// --------------------
+async function obtenerSolicitudes(estado, page = 1) {
+  try {
+    const res = await fetch(`http://localhost:8000/solicitud/?estado=${estado}&page=${page}&size=${tamañoPagina}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Error al obtener solicitudes");
+    const data = await res.json();
+    return data.solicitudes || [];
+  } catch (err) {
+    console.error(err);
+    Swal.fire({ icon: "error", title: "Error", text: err.message });
+    return [];
   }
 }
 
-// Cargar solicitudes al iniciar
-cargarSolicitudes();
+// --------------------
+// Renderizar solicitudes en contenedor específico
+// --------------------
+async function renderSolicitudes(contenedorId, estado) {
+  const contenedor = document.getElementById(contenedorId);
+  let pagina, cargando;
+
+  if (estado === "pendiente") {
+    pagina = paginaPendientes;
+    if (cargandoPendientes) return;
+    cargandoPendientes = true;
+  } else {
+    pagina = paginaRechazadas;
+    if (cargandoRechazadas) return;
+    cargandoRechazadas = true;
+  }
+
+  const solicitudes = await obtenerSolicitudes(estado, pagina);
+
+  // Si no hay solicitudes
+  if (solicitudes.length === 0 && pagina === 1) {
+    contenedor.innerHTML = `<p class="sin-solicitudes">No hay solicitudes ${estado}</p>`;
+  } else {
+    solicitudes.forEach(solicitud => {
+      const card = document.createElement("div");
+      card.className = "solicitud-card";
+
+      const fechaFormateada = solicitud.fecha ? new Date(solicitud.fecha).toLocaleDateString("es-ES") : "Sin fecha";
+
+      card.innerHTML = `
+        <h3>${solicitud.nombre}</h3>
+        <p><strong>Contacto:</strong> ${solicitud.telefono || "No especificado"}</p>
+        <p><strong>Fecha:</strong> ${fechaFormateada}</p>
+        <p><strong>Servicio:</strong> ${solicitud.tipo_trabajo}</p>
+        <p><strong>Descripción:</strong> ${solicitud.descripcion}</p>
+        <p><strong>Origen:</strong> ${solicitud.origen}</p>
+        <p><strong>Destino:</strong> ${solicitud.destino}</p>
+        <p><strong>Total cotizado:</strong> $${solicitud.total}</p>
+      `;
+
+      if (estado === "pendiente") {
+        const aceptarBtn = document.createElement("button");
+        aceptarBtn.textContent = "Aceptar";
+        aceptarBtn.className = "aceptar";
+        aceptarBtn.onclick = () => actualizarEstado(solicitud.id_solicitud, "aceptada");
+
+        const rechazarBtn = document.createElement("button");
+        rechazarBtn.textContent = "Rechazar";
+        rechazarBtn.className = "rechazar";
+        rechazarBtn.onclick = () => actualizarEstado(solicitud.id_solicitud, "rechazada");
+
+        card.appendChild(aceptarBtn);
+        card.appendChild(rechazarBtn);
+      } else {
+        const eliminarBtn = document.createElement("button");
+        eliminarBtn.textContent = "Eliminar";
+        eliminarBtn.className = "eliminar";
+        eliminarBtn.onclick = () => eliminarSolicitud(solicitud.id_solicitud);
+        card.appendChild(eliminarBtn);
+      }
+
+      contenedor.appendChild(card);
+    });
+
+    // Agregar botón "Cargar más"
+    const btnId = `btn-cargar-${estado}`;
+    let btn = document.getElementById(btnId);
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.id = btnId;
+      btn.textContent = "Cargar más";
+      btn.className = "btn-cargar";
+      btn.onclick = () => renderSolicitudes(contenedorId, estado);
+      contenedor.appendChild(btn);
+    }
+  }
+
+  // Actualizar página y bandera
+  if (estado === "pendiente") {
+    cargandoPendientes = false;
+    if (solicitudes.length === tamañoPagina) paginaPendientes++;
+  } else {
+    cargandoRechazadas = false;
+    if (solicitudes.length === tamañoPagina) paginaRechazadas++;
+  }
+}
+
+// --------------------
+// Actualizar estado vía API
+// --------------------
+async function actualizarEstado(id, nuevoEstado) {
+  try {
+    const res = await fetch(`http://localhost:8000/solicitud/${id}?estado=${nuevoEstado}`, {
+      method: "PATCH",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Error al actualizar estado");
+    }
+
+    await Swal.fire({ icon: "success", title: `Solicitud ${nuevoEstado}` });
+
+    // Reiniciar contenedores y páginas
+    document.getElementById("pendientes-container").innerHTML = "";
+    document.getElementById("rechazadas-container").innerHTML = "";
+    paginaPendientes = 1;
+    paginaRechazadas = 1;
+
+    renderSolicitudes("pendientes-container", "pendiente");
+    renderSolicitudes("rechazadas-container", "rechazada");
+
+  } catch (err) {
+    console.error(err);
+    Swal.fire({ icon: "error", title: "Error", text: err.message });
+  }
+}
+
+// --------------------
+// Eliminar solicitud
+// --------------------
+async function eliminarSolicitud(id) {
+  const confirm = await Swal.fire({
+    title: "¿Eliminar solicitud?",
+    text: "Esta acción no se puede deshacer.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar"
+  });
+
+  if (!confirm.isConfirmed) return;
+
+  try {
+    const res = await fetch(`http://localhost:8000/solicitud/${id}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (!res.ok) throw new Error("Error al eliminar solicitud");
+
+    await Swal.fire({ icon: "success", title: "Solicitud eliminada" });
+
+    document.getElementById("rechazadas-container").innerHTML = "";
+    paginaRechazadas = 1;
+    renderSolicitudes("rechazadas-container", "rechazada");
+
+  } catch (err) {
+    console.error(err);
+    Swal.fire({ icon: "error", title: "Error", text: err.message });
+  }
+}
+
+// --------------------
+// Inicializar
+// --------------------
+verificarSesion().then(user => {
+  if (!user) return;
+  renderSolicitudes("pendientes-container", "pendiente");
+  renderSolicitudes("rechazadas-container", "rechazada");
+});
