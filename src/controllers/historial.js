@@ -1,7 +1,9 @@
 const token = sessionStorage.getItem("access_token") || "";
-let paginaActual = 1;
-const size = 10;
-let totalPaginas = 1;
+let currentPage = 1;
+const pageSize = 10;
+let totalPages = 1;
+const tbody = document.getElementById("agenda-body");
+const loadMoreContainer = document.getElementById("load-more-container");
 
 // --------------------
 // Verificar sesión y usuario
@@ -19,24 +21,30 @@ async function verificarSesion() {
 
     const user = await response.json();
 
-    if (user.rol !== "cliente") {
-      await Swal.fire({ icon: "error", title: "Acceso no autorizado", text: "Solo los clientes pueden acceder a esta página." });
+    if (user.rol !== "admin") {
+      await Swal.fire({
+        icon: "error",
+        title: "Acceso no autorizado",
+        text: "Solo los administradores pueden acceder a esta página."
+      });
       window.location.href = "../index.html";
       return null;
     }
 
-    // Configurar menú
-    const menu = document.getElementById("menu-lista");
+    // Configurar menú dinámico
+    const menu = document.querySelector(".menu ul");
     if (menu) {
       menu.innerHTML = `
         <li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>
-        <li><a href="../views/historial.html" class="active">Mi Historial</a></li>
-        <li><a href="../views/cotizar.html">Nueva Cotización</a></li>
+        <li><a href="../views/solicitudes.html">Solicitudes</a></li>
+        <li><a href="../views/agenda.html" class="active">Agenda</a></li>
+        <li><a href="../views/inventario.html">Inventario</a></li>
+        <li><a href="../views/colaboradores.html">Colaboradores</a></li>
         <li><a href="../views/login.html" id="logout">Cerrar sesión</a></li>
       `;
     }
 
-    // Logout
+    // Logout con confirmación
     document.getElementById("logout")?.addEventListener("click", async (e) => {
       e.preventDefault();
       const result = await Swal.fire({
@@ -64,79 +72,94 @@ async function verificarSesion() {
   }
 }
 
-async function cargarHistorial(filtro = "todas", append = false) {
-  const tbody = document.getElementById("historial-body");
-  if (!append) tbody.innerHTML = "";
-
+// --------------------
+// Cargar agenda desde API con paginación
+// --------------------
+async function cargarAgenda(page = 1) {
   try {
-    const url = new URL("http://localhost:8000/solicitud/me/");
-    url.searchParams.append("page", paginaActual);
-    url.searchParams.append("size", size);
-    url.searchParams.append("estado", filtro); // enviar filtro al backend
-
-    const response = await fetch(url, {
+    const response = await fetch(`http://localhost:8000/solicitud?estado=aceptada&page=${page}&size=${pageSize}`, {
       method: "GET",
-      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
     });
 
-    if (!response.ok) throw new Error("Error al obtener el historial");
+    if (!response.ok) {
+      throw new Error("Error al cargar la agenda");
+    }
 
     const data = await response.json();
-    totalPaginas = data.total_pages || 1;
-    const historial = data.solicitudes || [];
+    const agenda = data.solicitudes || [];
+    totalPages = data.total_pages;
 
-    if (historial.length === 0 && !append) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay registros en tu historial</td></tr>';
+    if (page === 1) {
+      tbody.innerHTML = ""; // limpiar tabla solo en la primera carga
+    }
+
+    if (agenda.length === 0 && page === 1) {
+      const row = document.createElement("tr");
+      row.innerHTML = '<td colspan="7" style="text-align: center;">No hay servicios agendados</td>';
+      tbody.appendChild(row);
       return;
     }
 
-    historial.forEach(item => {
+    // Renderizar filas
+    agenda.forEach(item => {
       const row = document.createElement("tr");
       const fechaFormateada = item.fecha ? new Date(item.fecha).toLocaleDateString("es-ES") : "Sin fecha";
+
       row.innerHTML = `
         <td>${fechaFormateada}</td>
+        <td>${item.nombre || "Sin nombre"}</td>
+        <td>${item.telefono || "Sin contacto"}</td>
         <td>${item.tipo_trabajo || "Sin servicio"}</td>
         <td>${item.descripcion || "Sin descripción"}</td>
-        <td class="estado-${item.estado}">${item.estado || "Pendiente"}</td>
-        <td>$${item.total || 0}</td>
+        <td>${item.origen || "Sin origen"}</td>
+        <td>${item.destino || "Sin destino"}</td>
       `;
       tbody.appendChild(row);
     });
 
     // Mostrar u ocultar botón "Cargar más"
-    const btnCargarMas = document.getElementById("cargar-mas");
-    if (btnCargarMas) {
-      btnCargarMas.style.display = (paginaActual < totalPaginas) ? "block" : "none";
-    }
+    renderLoadMoreButton();
 
   } catch (error) {
-    console.error(error);
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">${error.message}</td></tr>`;
+    console.error("Error:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "No se pudo cargar la agenda."
+    });
   }
 }
 
 // --------------------
-// Función para filtrar historial
+// Botón de "Cargar más"
 // --------------------
-function filtrarHistorial() {
-  const filtro = document.getElementById("filtro-estado").value || "todas";
-  paginaActual = 1;
-  cargarHistorial(filtro);
+function renderLoadMoreButton() {
+  if (!loadMoreContainer) return;
+
+  loadMoreContainer.innerHTML = "";
+
+  if (currentPage < totalPages) {
+    const btn = document.createElement("button");
+    btn.textContent = "Cargar más";
+    btn.classList.add("btn", "btn-primary");
+    btn.addEventListener("click", () => {
+      currentPage++;
+      cargarAgenda(currentPage);
+    });
+    loadMoreContainer.appendChild(btn);
+  }
 }
 
-
 // --------------------
-// Botón "Cargar más"
+// Inicializar
 // --------------------
-document.getElementById("cargar-mas")?.addEventListener("click", () => {
-  paginaActual++;
-  cargarHistorial(document.getElementById("filtro-estado")?.value || "todos", true);
-});
-
-// --------------------
-// Inicialización
-// --------------------
-verificarSesion().then(user => {
-  if (!user) return;
-  cargarHistorial();
-});
+(async function init() {
+  const user = await verificarSesion();
+  if (user) {
+    cargarAgenda(currentPage);
+  }
+})();

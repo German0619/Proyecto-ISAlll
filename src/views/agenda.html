@@ -5,7 +5,26 @@
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Agenda</title>
-   <link rel="stylesheet" href="src/styles/agenda.css">
+   <link rel="stylesheet" href="../styles/agenda.css">
+   <style>
+    .table-container {
+      max-height: 400px;  
+      overflow-y: auto;   
+      overflow-x: auto;    
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    /* Para que el encabezado quede fijo arriba */
+    .table-container thead th {
+      position: sticky;
+      top: 0;
+      background: #585197;
+      z-index: 2;
+      border-bottom: 2px solid #ddd;
+    }
+
+   </style>
  </head>
  
  <body>
@@ -19,27 +38,30 @@
     <main>
       <h1>Agenda de Servicios</h1>
 
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Cliente</th>
-              <th>Contacto</th>
-              <th>Servicio</th>
-              <th>Descripción</th>
-              <th>Ubicación Origen</th>
-              <th>Ubicación Destino</th>
-            </tr>
-          </thead>
-          <tbody id="agenda-body">
-            <!-- Servicios agendados aquí -->
-          </tbody>
-        </table>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Contacto</th>
+            <th>Servicio</th>
+            <th>Descripción</th>
+            <th>Origen</th>
+            <th>Destino</th>
+          </tr>
+        </thead>
+        <tbody id="agenda-body"></tbody>
+      </table>
+    </div>
+
+
+        <div id="load-more-container" style="text-align:center; margin-top: 15px;"></div>
+
       </div>
     </main>
   </div>
 
-  <script src="src/controllers/agenda.js"></script>
+  <script src="../controllers/agenda.js"></script>
  </body>
  </html>

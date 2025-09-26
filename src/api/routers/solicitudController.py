@@ -7,11 +7,11 @@ from utils.dbHelper import paginar,totalPages
 
 router  = APIRouter(prefix="/solicitud", tags=["Solicitudes"])
 """
-Ese controlador esta bajo vigilancia a posible cambio futuro paraoptimizacion
+Este controlador esta bajo vigilancia a posible cambio futuro paraoptimizacion
 """
 @router.get("/", status_code=status.HTTP_200_OK)
 async def obtenerSolicitudes(
-    estado: str = Query("todas", description="Filtrar por estado: 'pendiente', 'rechazada' o 'todas'"),
+    estado: str = Query("todas", description="Filtrar por estado: 'pendiente', 'rechazada', 'aceptada' o 'todas'"),
     page: int = Query(1, ge=1, description="Número de página"),
     size: int = Query(10, ge=1, le=100),
     _: bool = Depends(isAdmin)
@@ -19,15 +19,17 @@ async def obtenerSolicitudes(
     try:
         # Validar valor del estado
         estado = estado.lower()
-        if estado not in ["pendiente", "rechazada", "todas"]:
-            raise HTTPException(status_code=400, detail="Estado inválido. Debe ser 'pendiente', 'rechazado' o 'todas'.")
+        if estado not in ["pendiente", "rechazada", "aceptada", "todas"]:
+            raise HTTPException(status_code=400, detail="Estado inválido. Debe ser 'pendiente', 'rechazada', 'aceptada' o 'todas'.")
 
-        # Mapear el estado a option para searchSolicitud
+        # Mapear el estado a option para searchSolicitudes
         option = None
         if estado == "pendiente":
             option = 1
         elif estado == "rechazada":
             option = 2
+        elif estado == "aceptada":
+            option = 3
 
         result = await searchSolicitudes(option=option, page=page, size=size)
 
@@ -43,11 +45,10 @@ async def obtenerSolicitudes(
         raise
     except Exception as e:
         raise errorInterno(e)
- 
 
 @router.get("/me/", status_code=status.HTTP_200_OK)
 async def obtenerHistorial(
-    estado: str = Query("todas", description="Filtrar por estado: 'pendiente', 'rechazada' o 'todas'"),
+    estado: str = Query("todas", description="Filtrar por estado: 'pendiente', 'rechazada', 'aceptada' o 'todas'"),
     page: int = Query(1, ge=1, description="Número de página"),
     size: int = Query(10, ge=1, le=100),
     userID: int = Depends(getTokenId)
@@ -55,15 +56,17 @@ async def obtenerHistorial(
     try:
         # Validar valor del estado
         estado = estado.lower()
-        if estado not in ["pendiente", "rechazada", "todas"]:
-            raise HTTPException(status_code=400, detail="Estado inválido. Debe ser 'pendiente', 'rechazado' o 'todas'.")
+        if estado not in ["pendiente", "rechazada", "aceptada", "todas"]:
+            raise HTTPException(status_code=400, detail="Estado inválido. Debe ser 'pendiente', 'rechazada', 'aceptada' o 'todas'.")
 
-        # Mapear el estado a option para searchSolicitud
+        # Mapear el estado a option para searchSolicitudes
         option = None
         if estado == "pendiente":
             option = 1
         elif estado == "rechazada":
             option = 2
+        elif estado == "aceptada":
+            option = 3
         # Si es "todas", option queda None y traerá todas las solicitudes del usuario
 
         result = await searchSolicitudes(option=option, page=page, size=size, userID=userID)
@@ -80,7 +83,6 @@ async def obtenerHistorial(
         raise
     except Exception as e:
         raise errorInterno(e)
-
 
 @router.post("/",status_code=status.HTTP_200_OK)
 async def crearSolicitud(solicitud : Solicitud,user_id : int = Depends(getTokenId)):
@@ -227,8 +229,11 @@ def direccionesSchema(direcciones)->dict:
         resultado[prov][dist].append(corr)
     return resultado
 
+# --------------------
+# Función de búsqueda
+# --------------------
 async def searchSolicitudes(option: int | None = None, page: int = 1, size: int = 10, userID: int | None = None):
-    offset = paginar(page,size)
+    offset = paginar(page, size)
     query = f"""
         SELECT 
             s.id_solicitud,
@@ -254,6 +259,10 @@ async def searchSolicitudes(option: int | None = None, page: int = 1, size: int 
     elif option == 2:
         filtros.append("estado = :estado")
         condicion["estado"] = "rechazada"
+    elif option == 3:
+        filtros.append("estado = :estado")
+        condicion["estado"] = "aceptada"
+
     if userID is not None:
         filtros.append("id_usuario = :id_usuario")
         condicion["id_usuario"] = userID
@@ -261,7 +270,7 @@ async def searchSolicitudes(option: int | None = None, page: int = 1, size: int 
     if filtros:
         query += " WHERE " + " AND ".join(filtros)
 
-    # Aquí hacemos interpolación segura para OFFSET y LIMIT
+    # Paginación
     query += f"""
         GROUP BY s.id_solicitud
         ORDER BY s.fecha DESC
@@ -272,7 +281,6 @@ async def searchSolicitudes(option: int | None = None, page: int = 1, size: int 
 
     # Contar total
     count_query = "SELECT COUNT(*) FROM solicitudes"
-    
     if filtros:
         count_query += " WHERE " + " AND ".join(filtros)
     total = await db.fetch_val(count_query, condicion)
@@ -280,9 +288,8 @@ async def searchSolicitudes(option: int | None = None, page: int = 1, size: int 
 
     return {"data": data, "total": total, "total_pages": total_pages}
 
+
 async def searchSolicitud(id:int):
     query = "SELECT * FROM solicitudes WHERE id_solicitud =:id_solicitud"
-    
-    result = await db.fetch_one(query,{"id_solicitud":id})
-    
+    result = await db.fetch_one(query, {"id_solicitud": id})
     return result
