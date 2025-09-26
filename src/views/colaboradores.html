@@ -6,18 +6,32 @@
   <title>Colaboradores</title>
   <link rel="stylesheet" href="../styles/colaboradores.css">
   <style>
-  #tabla-container {
-    max-height: 400px; /* Ajusta la altura deseada */
-    overflow-y: auto;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  th, td {
-    padding: 8px;
-    border: 1px solid #ddd;
-  }
+#tabla-container {
+  max-height: 400px;     /* Límite de altura */
+  overflow-y: auto;      /* Scroll vertical */
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+/* Encabezado fijo */
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 2px solid #ddd;
+}
+
 </style>
 </head>
 <body>
