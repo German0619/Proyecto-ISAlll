@@ -70,7 +70,15 @@ async def obtenerHistorial(
         # Si es "todas", option queda None y traerá todas las solicitudes del usuario
 
         result = await searchSolicitudes(option=option, page=page, size=size, userID=userID)
-
+        if not result:
+            return {
+            "page": page,
+            "size": size,
+            "total": 0,
+            "total_pages": 0,
+            "solicitudes": []
+        }
+                        
         return {
             "page": page,
             "size": size,
