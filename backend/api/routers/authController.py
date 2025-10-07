@@ -65,7 +65,7 @@ async def register(user: Usuarios):
         raise errorInterno(e)
 
 # Obtener datos del usuario logueado
-@router.get("/me/", status_code=status.HTTP_200_OK)
+@router.get("/me", status_code=status.HTTP_200_OK)
 async def get_me(userId: int = Depends(getTokenId)):
     try:
         userData = await searchUser(userId,1)

@@ -30,15 +30,14 @@ document
       formData.append("username", email);
       formData.append("password", password);
 
-      const response = await fetch("http://localhost:8000/auth/login/", {
+      const loginResponse = await fetch("http://localhost:8000/auth/login/", {
         method: "POST",
         body: formData,
       });
 
-      Swal.close(); // Cerrar loading al recibir respuesta
-
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!loginResponse.ok) {
+        const errorData = await loginResponse.json();
+        Swal.close();
         Swal.fire({
           icon: "error",
           title: "Error",
@@ -47,22 +46,47 @@ document
         return;
       }
 
-      const data = await response.json();
+      const loginData = await loginResponse.json();
 
       // Guardar token JWT en sessionStorage
-      sessionStorage.setItem("access_token", data.access_token);
+      sessionStorage.setItem("access_token", loginData.access_token);
       sessionStorage.setItem("usuarioActual", email);
 
+      // Ahora hacemos la solicitud a /auth/me para obtener el rol
+      const meResponse = await fetch("http://localhost:8000/auth/me", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${loginData.access_token}`,
+        },
+      });
+
+      Swal.close();
+
+      if (!meResponse.ok) {
+        Swal.fire({
+          icon: "error",
+          title: "Error al obtener datos del usuario",
+          text: "No se pudo verificar el rol del usuario.",
+        });
+        return;
+      }
+
+      const meData = await meResponse.json();
+      console.log(meData)
       Swal.fire({
         icon: "success",
         title: "¡Bienvenid@ de vuelta!",
         showConfirmButton: false,
-        timer: 1500
+        timer: 1500,
       });
 
-      // Redirigir según rol o por defecto a cotizar.html
+      // Redirigir según el rol recibido desde /auth/me
       setTimeout(() => {
-        window.location.href = "../views/cotizar.html";
+        if (meData.rol === "admin") {
+          window.location.href = "../views/solicitudes.html";
+        } else {
+          window.location.href = "../views/cotizar.html";
+        }
       }, 1500);
 
     } catch (error) {

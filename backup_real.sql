@@ -1,3 +1,4 @@
+--en Proceso de remodelacion D:
 -- =========================
 -- Base de datos: transporte_hector_murillo
 -- Todas las fechas como TIMESTAMPTZ

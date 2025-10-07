@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from routers import authController,solicitudController,inventarioController,collaboradoresController
 from fastapi.middleware.cors import CORSMiddleware
 from database.connectDB import connect,disconnect
@@ -19,7 +20,8 @@ app.include_router(authController.router)
 app.include_router(solicitudController.router)
 app.include_router(collaboradoresController.router)
 app.include_router(inventarioController.router)
-
+#cargar el frontend en el servidor de uvicorn
+app.mount("/app", StaticFiles(directory="../../frontend"),name="frontend")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
