@@ -14,9 +14,10 @@ async def agregarColaborador(colaborador: Colaborador, _ = Depends(authToken)):
         if not await searchColaboradores(colaborador.id_colaborador) is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail="El colaborador que intento registrar ya se encuentra registado")
-        if validCedula(colaborador.id_colaborador):
+        if not validCedula(colaborador.id_colaborador):
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                                 detail="Cedula invalida")
+            
         async with db.transaction():
             query = """
                 INSERT INTO colaboradores(id_colaborador,nombre,especialidad,pago_hora)

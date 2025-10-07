@@ -193,10 +193,10 @@ document.getElementById("btn-eliminar")?.addEventListener("click", () => abrirMo
 // --------------------
 document.getElementById("guardar-colaborador")?.addEventListener("click", async () => {
   const nuevo = {
-    id_colaborador: parseInt(document.getElementById("id").value, 10),
+    id_colaborador: document.getElementById("id").value.trim(), 
     nombre: document.getElementById("nombre").value.trim(),
     especialidad: document.getElementById("especialidad").value.trim(),
-    pago_hora: parseFloat(document.getElementById("pago").value),
+    pago_hora: parseFloat(document.getElementById("pago").value), 
   };
 
   if (!nuevo.nombre || !nuevo.id_colaborador || !nuevo.especialidad || !nuevo.pago_hora) {
@@ -233,7 +233,7 @@ document.getElementById("guardar-colaborador")?.addEventListener("click", async 
 // Eliminar colaborador
 // --------------------
 document.getElementById("confirmar-eliminar")?.addEventListener("click", async () => {
-  const idEliminar = document.getElementById("id-eliminar").value;
+  const idEliminar = document.getElementById("id-eliminar").value.trim();
 
   if (!idEliminar) {
     Swal.fire("Error", "Por favor ingresa un ID", "warning");

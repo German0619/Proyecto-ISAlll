@@ -63,8 +63,8 @@ INSERT INTO inventario (nombre, cantidad) VALUES
 ('Conos de señalización', 15);
 
 -- Tabla colaboradores
-CREATE TABLE IF NOT EXISTS colaboradores (
-    id_colaborador SERIAL PRIMARY KEY,
+CREATE TABLE colaboradores (
+    id_colaborador VARCHAR(20) PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL,
     especialidad VARCHAR(150),
     pago_hora DECIMAL(10,2),
@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS colaboradores (
     creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- Datos de ejemplo colaboradores
 INSERT INTO colaboradores (nombre, especialidad, pago_hora, id_tipo_trabajo) VALUES
