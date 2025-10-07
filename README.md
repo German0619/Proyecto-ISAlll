@@ -40,7 +40,7 @@ DB_NAME=transporte_hector_murillo
 
 SECRET_KEY=RW1pbGlhLVRhbiBHb2QsUmVtIFpaWg
 
-ACCESS_TOKEN_EXPIRED_MINUTES=60
+ACCESS_TOKEN_EXPIRED_MINUTES=30
 
 ALGORITHM=HS256
 
@@ -78,7 +78,7 @@ Solo seria pegar el comando en terminal  y ya pero tendran las librerias de todo
    - Escribir en la terminal `pip install -r requirements.txt`
 
 ## Inicializar el servidor de la Api (Uvicorn)
-En la terminal debes ir a la ubicacion del archivo Main.py, para eso puedes usar el comando `cd src/api` y luego ejecutar el siguiente comando:
+En la terminal debes ir a la ubicacion del archivo Main.py, para eso puedes usar el comando `cd backend/api` y luego ejecutar el siguiente comando:
 `uvicorn Main:app --reload`
 
 > **Nota:** Es necesario tener el servidor encendido sino el proyecto web no funcionara.
@@ -91,5 +91,9 @@ Una vez que el servidor esté en funcionamiento, puedes acceder a la documentaci
 http://127.0.0.1:8000/docs
 
 solo pegar el link con el servidor encendido en el navegador
+
+## iniciar app
+para iniciar la app web en el mismo servidor solo acceder a:
+http://127.0.0.1:8000/app/src/index.html
 
 ## Cualquier pregunta o problema, no duden en preguntarme.

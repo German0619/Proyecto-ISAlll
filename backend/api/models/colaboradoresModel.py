@@ -1,10 +1,8 @@
 # database/models/colaboradorModel.py
-from pydantic import BaseModel, constr, condecimal
-from typing import Optional
-from datetime import datetime
+from pydantic import BaseModel
 
 class Colaborador(BaseModel):
-    id_colaborador:int
+    id_colaborador:str
     nombre: str
     especialidad: str
     pago_hora: float

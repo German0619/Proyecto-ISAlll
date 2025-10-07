@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from database.connectDB import db
+from core.connectDB import db
 import os
 import re
 from dotenv import load_dotenv
@@ -57,7 +57,7 @@ def validContrasena(password: str) -> bool:
     )
     return bool(pattern.match(password))
 
-async def searchColaboradores(id:int):
+async def searchColaboradores(id:str):
     try:
         query = """
             SELECT * FROM colaboradores WHERE id_colaborador =:id_colaborador
@@ -74,3 +74,19 @@ async def searchHerramienta(id:int):
     result = await db.fetch_one(query,{"id_item":id})
     
     return result
+
+def validCedula(cedula: str) -> bool:
+    """
+    Valida una cédula panameña en formato estándar.
+    
+    Formatos válidos incluyen:
+      - 1-1234-12345
+      - PE-1234-12345
+      - E-1234-123456
+      - N-1234-1234
+      - 1AV-1234-12345
+      - 1PI-1234-12345
+    """
+    # Expresión regular para validar la cédula panameña
+    patron = re.compile(r'^(?:\d|PE|E|N|1AV|1PI)-\d{4}-\d{4,6}$', re.IGNORECASE)
+    return bool(patron.match(cedula.strip()))

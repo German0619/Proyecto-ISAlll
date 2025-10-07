@@ -1,9 +1,9 @@
 from fastapi import APIRouter,HTTPException,status,Depends
-from database.connectDB import db
-from database.models.colaboradoresModel import Colaborador,colaboradorSchema
-from utils.security import authToken,isAdmin
+from core.connectDB import db
+from core.security import authToken,isAdmin
+from models.colaboradoresModel import Colaborador,colaboradorSchema
 from utils.httpError import errorInterno
-from utils.infoVerify import searchColaboradores
+from utils.infoVerify import searchColaboradores,validCedula
 from utils.dbHelper import paginar,totalPages
 
 router = APIRouter(prefix="/colaboradores",tags=["Colaboradores"])
@@ -14,7 +14,9 @@ async def agregarColaborador(colaborador: Colaborador, _ = Depends(authToken)):
         if not await searchColaboradores(colaborador.id_colaborador) is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail="El colaborador que intento registrar ya se encuentra registado")
-        
+        if validCedula(colaborador.id_colaborador):
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                                detail="Cedula invalida")
         async with db.transaction():
             query = """
                 INSERT INTO colaboradores(id_colaborador,nombre,especialidad,pago_hora)
@@ -78,7 +80,7 @@ async def obtenerColaboradores(
         raise errorInterno(e)
 
 @router.delete("/{id}",status_code=status.HTTP_200_OK)
-async def eliminarColaborador(id:int,_: bool = Depends(isAdmin)):
+async def eliminarColaborador(id:str,_: bool = Depends(isAdmin)):
     try:
         async with db.transaction():
             if await searchColaboradores(id) is None:

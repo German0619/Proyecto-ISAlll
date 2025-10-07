@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from routers import authController,solicitudController,inventarioController,collaboradoresController
 from fastapi.middleware.cors import CORSMiddleware
-from database.connectDB import connect,disconnect
+from core.connectDB import connect,disconnect
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
@@ -33,3 +34,7 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "Es la ruta raíz"}
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse("../../frontend/public/static/favicon.ico")

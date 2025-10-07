@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query
-from database.connectDB import db
-from database.models.solicitudModel import Solicitud, solicitudSchema
-from utils.security import getTokenId,isAdmin,authToken
+from core.connectDB import db
+from core.security import getTokenId,isAdmin
+from models.solicitudModel import Solicitud, solicitudSchema
 from utils.httpError import errorInterno
 from utils.dbHelper import paginar,totalPages
 

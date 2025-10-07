@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
-from database.connectDB import db
-from database.models.userModel import Usuarios,userSchema
-from utils.security import generateJWT,getTokenId
+from core.connectDB import db
+from core.security import generateJWT,getTokenId
+from models.userModel import Usuarios,userSchema
 from utils.infoVerify import searchUser,validContrasena
 from utils.httpError import errorInterno
 router = APIRouter(prefix ="/auth",tags=["Autenticacion"])
