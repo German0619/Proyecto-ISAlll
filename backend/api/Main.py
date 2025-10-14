@@ -25,7 +25,7 @@ app.include_router(inventarioController.router)
 app.mount("/app", StaticFiles(directory="../../frontend"),name="frontend")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["http://localhost:8000","http://127.0.0.1:8000"],  # o tu dominio real
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

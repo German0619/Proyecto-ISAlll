@@ -105,6 +105,13 @@ CREATE TABLE IF NOT EXISTS solicitudes (
     actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS solicitud_colaboradores (
+    id SERIAL PRIMARY KEY,
+    id_solicitud INT NOT NULL REFERENCES solicitudes(id_solicitud) ON DELETE CASCADE,
+    id_colaborador VARCHAR(20) NOT NULL REFERENCES colaboradores(id_colaborador) ON DELETE CASCADE,
+    asignado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Tabla solicitud_servicios
 CREATE TABLE IF NOT EXISTS solicitud_servicios (
     id SERIAL PRIMARY KEY,
