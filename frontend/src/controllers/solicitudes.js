@@ -75,20 +75,36 @@ async function verificarSesion() {
 }
 
 // --------------------
-// Obtener solicitudes desde API
+// Obtener solicitudes desde API con animación de carga
 // --------------------
 async function obtenerSolicitudes(estado, page = 1) {
+  let swalCargando;
   try {
+    // Mostrar animación de carga
+    swalCargando = Swal.fire({
+      title: 'Cargando solicitudes...',
+      html: 'Por favor espera',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
     const res = await fetch(`http://localhost:8000/solicitud/?estado=${estado}&page=${page}&size=${tamañoPagina}`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
+
     if (!res.ok) throw new Error("Error al obtener solicitudes");
+
     const data = await res.json();
     return data.solicitudes || [];
   } catch (err) {
     console.error(err);
     Swal.fire({ icon: "error", title: "Error", text: err.message });
     return [];
+  } finally {
+    // Cerrar animación de carga
+    if (swalCargando) Swal.close();
   }
 }
 
