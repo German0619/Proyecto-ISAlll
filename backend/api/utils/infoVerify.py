@@ -1,9 +1,12 @@
+import datetime
 from fastapi import HTTPException, status
+from sqlalchemy import true
 from core.connectDB import db
 import os
 import re
 from dotenv import load_dotenv
 from utils.httpError import errorInterno
+from datetime import datetime
 
 load_dotenv()
 
@@ -99,3 +102,8 @@ def validTel(numero: str) -> bool:
     pattern = r"^(2\d{6}|[678]\d{7})$"
     
     return bool(re.match(pattern, limpio))
+
+def validDate(fecha) -> bool:
+    if fecha.tzinfo is not None:
+        fecha = fecha.replace(tzinfo=None)
+    return fecha > datetime.now()

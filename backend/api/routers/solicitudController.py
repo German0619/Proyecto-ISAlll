@@ -4,7 +4,7 @@ from core.security import getTokenId,isAdmin
 from models.solicitudModel import Solicitud, solicitudSchema
 from utils.httpError import errorInterno
 from utils.dbHelper import paginar,totalPages
-from utils.infoVerify import validTel
+from utils.infoVerify import validTel,validDate
 
 router  = APIRouter(prefix="/solicitud", tags=["Solicitudes"])
 """
@@ -100,6 +100,11 @@ async def crearSolicitud(solicitud : Solicitud,user_id : int = Depends(getTokenI
         if not validTel(solicitud.telefono):
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                                 detail="Telefono invalido, ingrese uno valido")
+        
+        if not validDate(solicitud.fecha):
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                                detail="Fecha invalida, ingrese una valido (la fecha debe ser una fecha futura)")
+            
         async with db.transaction():
             query = """
                 INSERT INTO solicitudes(id_usuario, fecha, nombre, telefono, servicio, descripcion, origen, destino, total)
