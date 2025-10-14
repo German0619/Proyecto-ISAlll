@@ -90,3 +90,12 @@ def validCedula(cedula: str) -> bool:
     # Expresión regular para validar la cédula panameña
     patron = re.compile(r'^(?:\d|PE|E|N|1AV|1PI)-\d{4}-\d{4,6}$', re.IGNORECASE)
     return bool(patron.match(cedula.strip()))
+
+def validTel(numero: str) -> bool:
+    # Limpiar espacios y guiones
+    limpio = re.sub(r"[\s-]", "", numero)
+    
+    # Regex para Panamá: fijos (7 dígitos, empiezan con 2) o móviles (8 dígitos, empiezan con 6,7,8)
+    pattern = r"^(2\d{6}|[678]\d{7})$"
+    
+    return bool(re.match(pattern, limpio))
