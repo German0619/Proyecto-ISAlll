@@ -1,6 +1,5 @@
 import datetime
 from fastapi import HTTPException, status
-from sqlalchemy import true
 from core.connectDB import db
 import os
 import re

@@ -34,7 +34,3 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "Es la ruta raíz"}
-
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
-    return FileResponse("../../frontend/public/static/favicon.ico")

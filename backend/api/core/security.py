@@ -114,10 +114,7 @@ async def isAdmin(token: Dict = Depends(authToken)) -> bool:
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error interno del servidor"
-        )
+        raise errorInterno()
 
 def getTokenId(token: Dict = Depends(authToken)):
     user_id = token.get("sub")
