@@ -200,31 +200,6 @@ async def actualizarEstado(id: int, estado: str, _: bool = Depends(isAdmin)):
     except Exception as e:
         raise errorInterno(e)
 
-
-# ===============================
-# 🔹 Eliminar solicitud (admin)
-# ===============================
-@router.delete("/{id}", status_code=status.HTTP_200_OK)
-async def eliminarSolicitud(id: int, _: bool = Depends(isAdmin)):
-    try:
-        existe = await db.fetch_val("SELECT 1 FROM solicitudes WHERE id_solicitud = :id", {"id": id})
-        if not existe:
-            raise HTTPException(status_code=404, detail="Solicitud no existe")
-
-        async with db.transaction():
-            await db.execute("DELETE FROM solicitud_servicios WHERE id_solicitud = :id", {"id": id})
-            result = await db.fetch_val(
-                "DELETE FROM solicitudes WHERE id_solicitud = :id RETURNING id_solicitud",
-                {"id": id}
-            )
-            if not result:
-                raise errorInterno("Error al eliminar solicitud")
-            return {"detail": "Solicitud eliminada exitosamente"}
-
-    except Exception as e:
-        raise errorInterno(e)
-
-
 # ===============================
 # 🔹 Obtener direcciones
 # ===============================
