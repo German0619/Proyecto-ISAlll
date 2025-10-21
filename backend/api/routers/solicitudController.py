@@ -4,13 +4,13 @@ from core.security import getTokenId, isAdmin
 from models.solicitudModel import Solicitud, solicitudSchema
 from utils.httpError import errorInterno
 from utils.dbHelper import paginar, totalPages
-from utils.infoVerify import validTel, validDate
+from utils.infoVerify import searchColaboradores, validTel, validDate
 
 router = APIRouter(prefix="/solicitud", tags=["Solicitudes"])
 
 
 # ===============================
-# 🔹 Obtener todas las solicitudes (admin)
+# Obtener todas las solicitudes (admin)
 # ===============================
 @router.get("/", status_code=status.HTTP_200_OK)
 async def obtenerSolicitudes(
@@ -26,7 +26,7 @@ async def obtenerSolicitudes(
 
         offset = paginar(page, size)
 
-        # 🔹 Construcción dinámica de query según estado
+        #Construcción dinámica de query según estado
         query = """
             SELECT 
                 s.id_solicitud, s.fecha, s.nombre, s.telefono,
@@ -71,7 +71,7 @@ async def obtenerSolicitudes(
 
 
 # ===============================
-# 🔹 Obtener historial del usuario
+# Obtener historial del usuario
 # ===============================
 @router.get("/me/", status_code=status.HTTP_200_OK)
 async def obtenerHistorial(
@@ -130,7 +130,7 @@ async def obtenerHistorial(
 
 
 # ===============================
-# 🔹 Crear solicitud
+# Crear solicitud
 # ===============================
 @router.post("/", status_code=status.HTTP_200_OK)
 async def crearSolicitud(solicitud: Solicitud, user_id: int = Depends(getTokenId)):
@@ -176,27 +176,65 @@ async def crearSolicitud(solicitud: Solicitud, user_id: int = Depends(getTokenId
 
 
 # ===============================
-# 🔹 Actualizar estado (admin)
+# Actualizar estado (admin)
 # ===============================
 @router.patch("/{id}", status_code=status.HTTP_200_OK)
-async def actualizarEstado(id: int, estado: str, _: bool = Depends(isAdmin)):
+async def actualizarEstado(id: int, estado: str, colaborador: str, _: bool = Depends(isAdmin)):
     try:
+        # 1. Validar que el estado sea permitido
         if estado not in ["pendiente", "aceptada", "rechazada"]:
             raise HTTPException(status_code=406, detail="Estado inválido")
 
-        existe = await db.fetch_val("SELECT 1 FROM solicitudes WHERE id_solicitud = :id", {"id": id})
+        # 2. Verificar si la solicitud existe
+        existe = await db.fetch_val(
+            "SELECT COUNT(*) FROM solicitudes WHERE id_solicitud = :id",
+            {"id": id}
+        )
         if not existe:
             raise HTTPException(status_code=404, detail="Solicitud no encontrada")
 
+        # 3. Si se acepta, verificar si el colaborador existe
+        if estado == "aceptada":
+            if await searchColaboradores(colaborador) is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Colaborador inexistente"
+                )
+
+        # 4. Transacción segura
         async with db.transaction():
-            result = await db.fetch_val(
-                "UPDATE solicitudes SET estado = :estado WHERE id_solicitud = :id RETURNING id_solicitud",
+            # Actualizar el estado de la solicitud
+            id_solicitud = await db.fetch_val(
+                """
+                UPDATE solicitudes
+                SET estado = :estado
+                WHERE id_solicitud = :id
+                RETURNING id_solicitud
+                """,
                 {"estado": estado, "id": id}
             )
-            if not result:
-                raise errorInterno("No se pudo actualizar el estado")
-            return {"detail": "Solicitud actualizada exitosamente"}
 
+            if not id_solicitud:
+                raise errorInterno("No se pudo actualizar el estado")
+
+            # Si el estado es "aceptada", insertar en solicitud_colaboradores
+            if estado == "aceptada":
+                result = await db.fetch_val(
+                    """
+                    INSERT INTO solicitud_colaboradores(id_solicitud, id_colaborador)
+                    VALUES (:id_solicitud, :id_colaborador)
+                    RETURNING id
+                    """,
+                    {"id_solicitud": id_solicitud, "id_colaborador": colaborador}
+                )
+
+                if not result:
+                    raise errorInterno("Error al asignar colaborador")
+
+        return {"detail": "Solicitud actualizada exitosamente"}
+
+    except HTTPException:
+        raise  
     except Exception as e:
         raise errorInterno(e)
 
