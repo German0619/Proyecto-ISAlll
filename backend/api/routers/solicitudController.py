@@ -50,7 +50,7 @@ async def obtenerSolicitudes(
 
         data = await db.fetch_all(query, condicion)
 
-        # 🔹 Contar total de registros
+        # Contar total de registros
         count_query = "SELECT COUNT(*) FROM solicitudes"
         if estado != "todas":
             count_query += " WHERE estado = :estado"
@@ -237,36 +237,3 @@ async def actualizarEstado(id: int, estado: str, colaborador: str, _: bool = Dep
         raise  
     except Exception as e:
         raise errorInterno(e)
-
-# ===============================
-# 🔹 Obtener direcciones
-# ===============================
-@router.get("/direcciones/", status_code=status.HTTP_200_OK)
-async def obtenerDirecciones():
-    try:
-        query = """
-            SELECT p.nombre AS provincia, d.nombre AS distrito, c.nombre AS corregimiento
-            FROM provincias p
-            JOIN distritos d ON d.id_provincia = p.id_provincia
-            JOIN corregimientos c ON c.id_distrito = d.id_distrito
-            ORDER BY p.nombre, d.nombre, c.nombre;
-        """
-        direcciones = await db.fetch_all(query)
-        if not direcciones:
-            raise HTTPException(status_code=404, detail="No se encontraron direcciones")
-
-        return {"direcciones": direccionesSchema(direcciones)}
-
-    except Exception as e:
-        raise errorInterno(e)
-
-
-# ===============================
-# 🔹 Función auxiliar para direcciones
-# ===============================
-def direccionesSchema(direcciones) -> dict:
-    resultado = {}
-    for fila in direcciones:
-        prov, dist, corr = fila["provincia"], fila["distrito"], fila["corregimiento"]
-        resultado.setdefault(prov, {}).setdefault(dist, []).append(corr)
-    return resultado

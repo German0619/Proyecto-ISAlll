@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from routers import authController,solicitudController,inventarioController,collaboradoresController
+from routers import authController,solicitudController,inventarioController,collaboradoresController,direccionesController
 from fastapi.middleware.cors import CORSMiddleware
 from core.connectDB import connect,disconnect
 from contextlib import asynccontextmanager
@@ -21,6 +21,8 @@ app.include_router(authController.router)
 app.include_router(solicitudController.router)
 app.include_router(collaboradoresController.router)
 app.include_router(inventarioController.router)
+app.include_router(direccionesController.router)
+
 #cargar el frontend en el servidor de uvicorn
 app.mount("/app", StaticFiles(directory="../../frontend"),name="frontend")
 app.add_middleware(
