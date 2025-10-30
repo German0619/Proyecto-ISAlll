@@ -51,7 +51,7 @@ async def obtenerColaboradores(
     
     try:
         query = """
-            SELECT id_colaborador, nombre, especialidad, pago_hora, id_tipo_trabajo
+            SELECT id_colaborador, nombre, especialidad, pago_hora, id_tipo_trabajo, estado
             FROM colaboradores
             ORDER BY id_colaborador
             OFFSET :skip LIMIT :limit
