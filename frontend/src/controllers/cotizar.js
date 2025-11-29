@@ -14,7 +14,7 @@ async function verificarSesion() {
       return null;
     }
 
-    const response = await fetch('http://localhost:8000/auth/me/', {
+    const response = await fetch('http://localhost:8000/auth/me', {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
     });
@@ -49,7 +49,7 @@ verificarSesion().then(user => {
 
   const menu = document.getElementById('menu-lista');
   if (menu) {
-    menu.innerHTML = '<li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>';
+    menu.innerHTML = '<li><img src="../public/logo.png" alt="Logo" class="logo"></li>';
 
     if (user.rol === 'admin') {
       menu.innerHTML += `

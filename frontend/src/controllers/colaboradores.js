@@ -22,7 +22,7 @@ async function verificarSesion() {
   }
 
   try {
-    const res = await fetch("http://localhost:8000/auth/me/", {
+    const res = await fetch("http://localhost:8000/auth/me", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

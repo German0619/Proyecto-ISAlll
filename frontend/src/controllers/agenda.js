@@ -7,7 +7,7 @@ const tbody = document.getElementById("agenda-body");
 // Menú dinámico
 // --------------------
 if (menu) {
-  menu.innerHTML = '<li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>';
+  menu.innerHTML = '<li><img src="../public/logo.png" alt="Logo" class="logo"></li>';
 
   if ("admin" === "admin") {
     menu.innerHTML += `
@@ -55,7 +55,7 @@ async function cargarAgenda() {
       }
     });
 
-    const response = await fetch("http://localhost:8000/solicitud?estado=aceptada", {
+    const response = await fetch("http://localhost:8000/solicitud/?estado=aceptada", {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
