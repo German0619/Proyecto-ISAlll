@@ -69,7 +69,6 @@ async def obtenerSolicitudes(
     except Exception as e:
         raise errorInterno(e)
 
-
 # ===============================
 # Obtener historial del usuario
 # ===============================
@@ -227,7 +226,18 @@ async def actualizarEstado(id: int, estado: str, colaborador: str, _: bool = Dep
                     """,
                     {"id_solicitud": id_solicitud, "id_colaborador": colaborador}
                 )
-
+                
+                if not result:
+                    raise errorInterno("Error al asignar colaborador")
+                
+                result = await db.fetch_val("""
+                    UPDATE colaboradores
+                    SET estado = :estado
+                    WHERE id_colaborador = :id
+                    RETURNING id_colaborador
+                    """,
+                    {"estado":"ocupado","id":colaborador})
+                
                 if not result:
                     raise errorInterno("Error al asignar colaborador")
 

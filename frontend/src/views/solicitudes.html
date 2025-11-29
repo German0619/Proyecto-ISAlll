@@ -12,8 +12,55 @@
   overflow-y: auto;
   border: 1px solid #ccc;
   padding: 10px;
-}
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    padding-top: 80px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+  }
 
+  .modal-content {
+    background: white;
+    margin: auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 700px;
+    border-radius: 10px;
+  }
+
+  .cerrar-modal {
+    float: right;
+    font-size: 28px;
+    cursor: pointer;
+  }
+
+  .tabla-colaboradores {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+
+  .tabla-colaboradores th, .tabla-colaboradores td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+  }
+
+  .seleccionar-btn {
+    background: #198754;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
   </style>
 </head>
 
@@ -40,9 +87,31 @@
       </section>
     </main>
   </div>
+   <!-- Modal para elegir colaborador -->
+<div id="modal-colaboradores" class="modal">
+  <div class="modal-content">
+    <span class="cerrar-modal">&times;</span>
+    <h2>Seleccionar colaborador disponible</h2>
+
+    <table class="tabla-colaboradores">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Especialidad</th>
+          <th>Pago/Hora</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-colaboradores">
+        <!-- Se llena dinámicamente -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="../controllers/solicitudes.js"></script>
-
 </body>
 
 </html>

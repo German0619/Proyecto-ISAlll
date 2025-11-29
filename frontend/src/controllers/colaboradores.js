@@ -149,6 +149,7 @@ async function cargarColaboradores(pagina = 1, append = false) {
         <td>${colab.id_colaborador}</td>
         <td>${colab.especialidad}</td>
         <td>${colab.pago_hora}</td>
+        <td>${colab.estado}</td>
       `;
       tbody.appendChild(row);
     });

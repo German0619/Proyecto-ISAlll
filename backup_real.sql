@@ -69,7 +69,7 @@ CREATE TABLE colaboradores (
     especialidad VARCHAR(150),
     pago_hora DECIMAL(10,2),
     id_tipo_trabajo INT REFERENCES tipos_trabajo(id_tipo),
-    estado VARCHAR(20) DEFAULT 'activo',
+    estado VARCHAR(20) DEFAULT 'disponible',
     creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );

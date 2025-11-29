@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy import true
-from routers import authController,solicitudController,inventarioController,collaboradoresController,direccionesController
+from routers import authController,solicitudController,inventarioController,colaboradoresController,direccionesController
 from fastapi.middleware.cors import CORSMiddleware
 from core.connectDB import connect,disconnect
 from contextlib import asynccontextmanager
@@ -21,7 +21,7 @@ app = FastAPI(lifespan=lifespan)
 # Registrar rutas
 app.include_router(authController.router)
 app.include_router(solicitudController.router)
-app.include_router(collaboradoresController.router)
+app.include_router(colaboradoresController.router)
 app.include_router(inventarioController.router)
 app.include_router(direccionesController.router)
 
