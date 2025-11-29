@@ -1,6 +1,8 @@
+import html
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from sqlalchemy import true
 from routers import authController,solicitudController,inventarioController,collaboradoresController,direccionesController
 from fastapi.middleware.cors import CORSMiddleware
 from core.connectDB import connect,disconnect
@@ -27,7 +29,7 @@ app.include_router(direccionesController.router)
 app.mount("/app", StaticFiles(directory="../../frontend"),name="frontend")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8000","http://127.0.0.1:8000"], 
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -7,7 +7,7 @@ const tbody = document.getElementById("agenda-body");
 // Menú dinámico
 // --------------------
 if (menu) {
-  menu.innerHTML = '<li><img src="../public/logo.png" alt="Logo" class="logo"></li>';
+  menu.innerHTML = '<li><img src="../../public/img/logo.png" alt="Logo" class="logo"></li>';
 
   if ("admin" === "admin") {
     menu.innerHTML += `
