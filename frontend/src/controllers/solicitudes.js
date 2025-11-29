@@ -16,7 +16,7 @@ async function verificarSesion() {
   try {
     if (!token) throw new Error("No token");
 
-    const response = await fetch("http://localhost:8000/auth/me/", {
+    const response = await fetch("http://localhost:8000/auth/me", {
       method: "GET",
       headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
     });
@@ -75,20 +75,36 @@ async function verificarSesion() {
 }
 
 // --------------------
-// Obtener solicitudes desde API
+// Obtener solicitudes desde API con animación de carga
 // --------------------
 async function obtenerSolicitudes(estado, page = 1) {
+  let swalCargando;
   try {
+    // Mostrar animación de carga
+    swalCargando = Swal.fire({
+      title: 'Cargando solicitudes...',
+      html: 'Por favor espera',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
     const res = await fetch(`http://localhost:8000/solicitud/?estado=${estado}&page=${page}&size=${tamañoPagina}`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
+
     if (!res.ok) throw new Error("Error al obtener solicitudes");
+
     const data = await res.json();
     return data.solicitudes || [];
   } catch (err) {
     console.error(err);
     Swal.fire({ icon: "error", title: "Error", text: err.message });
     return [];
+  } finally {
+    // Cerrar animación de carga
+    if (swalCargando) Swal.close();
   }
 }
 
@@ -136,7 +152,7 @@ async function renderSolicitudes(contenedorId, estado) {
         const aceptarBtn = document.createElement("button");
         aceptarBtn.textContent = "Aceptar";
         aceptarBtn.className = "aceptar";
-        aceptarBtn.onclick = () => actualizarEstado(solicitud.id_solicitud, "aceptada");
+        aceptarBtn.onclick = () => abrirModalColaboradores(solicitud.id_solicitud);
 
         const rechazarBtn = document.createElement("button");
         rechazarBtn.textContent = "Rechazar";
@@ -242,6 +258,108 @@ async function eliminarSolicitud(id) {
 
   } catch (err) {
     console.error(err);
+    Swal.fire({ icon: "error", title: "Error", text: err.message });
+  }
+}
+
+let solicitudSeleccionada = null;
+let colaboradorSeleccionado = null;
+
+// Abrir modal con colaboradores disponibles
+async function abrirModalColaboradores(idSolicitud) {
+  solicitudSeleccionada = idSolicitud;
+  const modal = document.getElementById("modal-colaboradores");
+  const tbody = document.getElementById("tbody-colaboradores");
+
+  tbody.innerHTML = `
+    <tr><td colspan="5">Cargando...</td></tr>
+  `;
+
+  modal.style.display = "block";
+
+  try {
+    const res = await fetch("http://localhost:8000/colaboradores/disponibles", {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (!res.ok) throw new Error("Error al cargar colaboradores");
+
+    const data = await res.json();
+    const colaboradores = data.colaboradores || [];
+
+    tbody.innerHTML = "";
+
+    if (colaboradores.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5">No hay colaboradores disponibles</td></tr>`;
+      return;
+    }
+
+    colaboradores.forEach(col => {
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${col.id_colaborador}</td>
+        <td>${col.nombre}</td>
+        <td>${col.especialidad || "N/A"}</td>
+        <td>$${col.pago_hora}</td>
+        <td>
+          <button class="seleccionar-btn" onclick="seleccionarColaborador('${col.id_colaborador}')">
+            Seleccionar
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(row);
+    });
+
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="5">Error al cargar colaboradores</td></tr>`;
+  }
+}
+
+// Cerrar modal
+document.querySelector(".cerrar-modal").onclick = () => {
+  document.getElementById("modal-colaboradores").style.display = "none";
+};
+
+async function seleccionarColaborador(idColaborador) {
+  colaboradorSeleccionado = idColaborador;
+
+  const confirm = await Swal.fire({
+    title: "¿Asignar colaborador?",
+    text: `Asignar colaborador ${idColaborador} a esta solicitud`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí, asignar",
+    cancelButtonText: "Cancelar"
+  });
+
+  if (!confirm.isConfirmed) return;
+
+  // Enviar PATCH al backend
+  try {
+    const res = await fetch(`http://localhost:8000/solicitud/${solicitudSeleccionada}?estado=aceptada&colaborador=${idColaborador}`, {
+      method: "PATCH",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (!res.ok) {
+      const e = await res.json();
+      throw new Error(e.detail);
+    }
+
+    await Swal.fire({ icon: "success", title: "Colaborador asignado" });
+
+    // Cerrar modal
+    document.getElementById("modal-colaboradores").style.display = "none";
+
+    // Recargar solicitudes
+    document.getElementById("pendientes-container").innerHTML = "";
+    paginaPendientes = 1;
+    renderSolicitudes("pendientes-container", "pendiente");
+
+  } catch (err) {
     Swal.fire({ icon: "error", title: "Error", text: err.message });
   }
 }

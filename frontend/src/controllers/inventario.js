@@ -14,7 +14,7 @@ async function verificarSesion() {
       return null;
     }
 
-    const response = await fetch('http://localhost:8000/auth/me/', {
+    const response = await fetch('http://localhost:8000/auth/me', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

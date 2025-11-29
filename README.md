@@ -70,11 +70,13 @@ Puedes instalar las librerías necesarias de dos formas:
      source venv/bin/activate
      ```
    Instalar las dependencias:
+   - Moverse a la carpeta del proyecto (donde esta el archivo requirements.txt) `cd backend`
    - Escribir en la terminal `pip install -r requirements.txt`
 ### Opción 2: Instalación global (no recomendado)
 Solo seria pegar el comando en terminal  y ya pero tendran las librerias de todo el sistema
 
    Instalar las dependencias:
+   - Moverse a la carpeta del proyecto (donde esta el archivo requirements.txt) `cd backend`
    - Escribir en la terminal `pip install -r requirements.txt`
 
 ## Inicializar el servidor de la Api (Uvicorn)

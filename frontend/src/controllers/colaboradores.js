@@ -22,7 +22,7 @@ async function verificarSesion() {
   }
 
   try {
-    const res = await fetch("http://localhost:8000/auth/me/", {
+    const res = await fetch("http://localhost:8000/auth/me", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -149,6 +149,7 @@ async function cargarColaboradores(pagina = 1, append = false) {
         <td>${colab.id_colaborador}</td>
         <td>${colab.especialidad}</td>
         <td>${colab.pago_hora}</td>
+        <td>${colab.estado}</td>
       `;
       tbody.appendChild(row);
     });

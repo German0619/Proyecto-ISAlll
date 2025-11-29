@@ -69,7 +69,7 @@ CREATE TABLE colaboradores (
     especialidad VARCHAR(150),
     pago_hora DECIMAL(10,2),
     id_tipo_trabajo INT REFERENCES tipos_trabajo(id_tipo),
-    estado VARCHAR(20) DEFAULT 'activo',
+    estado VARCHAR(20) DEFAULT 'disponible',
     creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -103,6 +103,13 @@ CREATE TABLE IF NOT EXISTS solicitudes (
     estado VARCHAR(20) DEFAULT 'pendiente',
     creado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS solicitud_colaboradores (
+    id SERIAL PRIMARY KEY,
+    id_solicitud INT NOT NULL REFERENCES solicitudes(id_solicitud) ON DELETE CASCADE,
+    id_colaborador VARCHAR(20) NOT NULL REFERENCES colaboradores(id_colaborador) ON DELETE CASCADE,
+    asignado_en TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla solicitud_servicios

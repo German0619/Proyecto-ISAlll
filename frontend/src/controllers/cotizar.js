@@ -14,7 +14,7 @@ async function verificarSesion() {
       return null;
     }
 
-    const response = await fetch('http://localhost:8000/auth/me/', {
+    const response = await fetch('http://localhost:8000/auth/me', {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
     });
@@ -73,7 +73,6 @@ verificarSesion().then(user => {
     }
   }
 
-  // Logout con SweetAlert2
   const logout = document.getElementById('logout');
   if (logout) {
     logout.addEventListener('click', async () => {
@@ -94,204 +93,188 @@ verificarSesion().then(user => {
   }
 });
 
+// --------------------
+// Acordeón
+// --------------------
+const acc = document.getElementsByClassName("accordion");
+for (let i = 0; i < acc.length; i++) {
+  acc[i].addEventListener("click", function () {
+    this.classList.toggle("active");
+    const panel = this.nextElementSibling;
+    panel.style.display = panel.style.display === "block" ? "none" : "block";
+  });
+}
 
-    // Acordeón
-    const acc = document.getElementsByClassName("accordion");
-    for (let i = 0; i < acc.length; i++) {
-      acc[i].addEventListener("click", function () {
-        this.classList.toggle("active");
-        const panel = this.nextElementSibling;
-        if (panel.style.display === "block") {
-          panel.style.display = "none";
-        } else {
-          panel.style.display = "block";
-        }
-      });
-    }
+// --------------------
+// Colaboradores
+// --------------------
+const colaboradoresPorTrabajo = {
+  "Acarreo": [
+    { nombre: "Juan Pérez - Conductor", pago: 10 },
+    { nombre: "Sebastian Rodríguez - Ayudante", pago: 8 },
+    { nombre: "Paul Jaén - Ayudante", pago: 8 }
+  ],
+  "Wincheo": [
+    { nombre: "Manuel Arauz - Manejador", pago: 12 },
+    { nombre: "Sebastian Rodríguez - Ayudante", pago: 8 },
+    { nombre: "Camilo Ortega - Conductor", pago: 10 },
+    { nombre: "Federico Jaén - Manejador", pago: 12 }
+  ],
+  "Mudanza Internas": [
+    { nombre: "Sebastian Rodríguez - Ayudante", pago: 8 },
+    { nombre: "Juan Pérez - Conductor", pago: 10 },
+    { nombre: "Andrés Lomon - Cargador", pago: 9 }
+  ]
+};
 
-    // Colaboradores
-    const colaboradoresPorTrabajo = {
-      "Acarreo": [
-        { nombre: "Juan Pérez - Conductor", pago: 10 },
-        { nombre: "Sebastian Rodríguez - Ayudante", pago: 8 },
-        { nombre: "Paul Jaén - Ayudante", pago: 8 }
-      ],
-      "Wincheo": [
-        { nombre: "Manuel Arauz - Manejador", pago: 12 },
-        { nombre: "Sebastian Rodríguez - Ayudante", pago: 8 },
-        { nombre: "Camilo Ortega - Conductor", pago: 10 },
-        { nombre: "Federico Jaén - Manejador", pago: 12 }
-      ],
-      "Mudanza Internas": [
-        { nombre: "Sebastian Rodríguez - Ayudante", pago: 8 },
-        { nombre: "Juan Pérez - Conductor", pago: 10 },
-        { nombre: "Andrés Lomon - Cargador", pago: 9 }
-      ]
-    };
-
-
-    function mostrarColaboradores() {
-      const tipoTrabajo = document.getElementById("tiposTrabajos").value;
-      const colaboradoresLista = document.getElementById("colaboradores-lista");
-      const colaboradores = colaboradoresPorTrabajo[tipoTrabajo] || [];
-      colaboradoresLista.innerHTML = `
+function mostrarColaboradores() {
+  const tipoTrabajo = document.getElementById("tiposTrabajos").value;
+  const colaboradoresLista = document.getElementById("colaboradores-lista");
+  const colaboradores = colaboradoresPorTrabajo[tipoTrabajo] || [];
+  colaboradoresLista.innerHTML = `
     <ul>
       ${colaboradores.map(c => `<li>${c.nombre} - <strong>$${c.pago}/h</strong></li>`).join("")}
     </ul>
   `;
-    }
+}
 
-    document.getElementById("tiposTrabajos").addEventListener("change", mostrarColaboradores);
-    mostrarColaboradores();
+document.getElementById("tiposTrabajos").addEventListener("change", mostrarColaboradores);
+mostrarColaboradores();
 
-    // Precios de servicios
-    const servicioValores = {
-      "montaCarga": 100,
-      "material": 30,
-      "materialEmbalaje": 25,
-      "camionPequeño": 90,
-      "camionGrande": 150,
-      "camionPlancha": 200
-    };
+// --------------------
+// Precios de servicios y mano de obra
+// --------------------
+const servicioValores = {
+  "montaCarga": 100,
+  "material": 30,
+  "materialEmbalaje": 25,
+  "camionPequeño": 90,
+  "camionGrande": 150,
+  "camionPlancha": 200
+};
 
-    const costoManoObra = {
-      "Acarreo": 100,
-      "Wincheo": 160,
-      "Mudanza Internas": 130
-    };
+const costoManoObra = {
+  "Acarreo": 100,
+  "Wincheo": 160,
+  "Mudanza Internas": 130
+};
 
-    const costoAdicionalTrabajo = {
-      "Acarreo": 200,
-      "Wincheo": 1000,
-      "Mudanza Internas": 500
-    };
+const costoAdicionalTrabajo = {
+  "Acarreo": 200,
+  "Wincheo": 1000,
+  "Mudanza Internas": 500
+};
 
+// --------------------
+// Direcciones desde API
+// --------------------
+let ubicaciones = {};
 
-    // Datos de Provincias, Ciudades y Barrios
-    const ubicaciones = {
-      "Panamá": {
-        "Ciudad de Panamá": ["Bethania", "San Francisco", "Juan Díaz"],
-        "San Miguelito": ["Belisario Porras", "Arnulfo Arias", "Victoriano Lorenzo"]
-      },
-      "Panamá Oeste": {
-        "Arraiján": ["Vista Alegre", "Burunga", "Juan Demóstenes Arosemena"],
-        "La Chorrera": ["Barrio Colón", "Barrio Balboa", "Playa Leona"]
-      },
-      "Colón": {
-        "Colón": ["Cristóbal Este", "Cativá", "Sabanitas"],
-        "Portobelo": ["Portobelo", "Cacique", "Isla Grande"]
-      },
-      "Chiriquí": {
-        "David": ["Barrio Bolívar", "Barrio Sur", "Barrio Norte"],
-        "Boquete": ["Alto Boquete", "Los Naranjos", "Palmira"]
-      },
-      "Veraguas": {
-        "Santiago": ["Canto del Llano", "San Martín de Porres", "Carlos Santana Ávila"],
-        "Soná": ["Soná Cabecera", "Bahía Honda", "Calidonia"]
-      },
-      "Coclé": {
-        "Penonomé": ["Penonomé Cabecera", "Chiguirí Arriba", "Río Grande"],
-        "Aguadulce": ["Aguadulce Cabecera", "El Cristo", "Pocrí"]
-      },
-      "Los Santos": {
-        "Las Tablas": ["Las Tablas Cabecera", "La Palma", "Santo Domingo"],
-        "Guararé": ["Guararé Cabecera", "El Espinal", "Perales"]
-      },
-      "Herrera": {
-        "Chitré": ["Chitré Cabecera", "La Arena", "Monagrillo"],
-        "Parita": ["Parita Cabecera", "Llano Grande", "Potuga"]
-      },
-      "Bocas del Toro": {
-        "Bocas del Toro": ["Bastimentos", "Isla Colón", "Cauchero"],
-        "Changuinola": ["Changuinola Cabecera", "El Empalme", "Guabito"]
-      },
-      "Darién": {
-        "La Palma": ["La Palma Cabecera", "Garachiné", "Chepigana"],
-        "Chepigana": ["Sambú", "Setegantí", "Taimatí"]
-      }
-    };
+async function cargarUbicaciones() {
+  try {
+    const token = sessionStorage.getItem('access_token') || '';
+    const response = await fetch('http://localhost:8000/direcciones/', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error("No se pudieron cargar las direcciones");
 
-    // ---------------------------
-    // Para Dirección de Partida
-    // ---------------------------
-    const provinciaPartida = document.getElementById("provincia-partida");
-    const distritoPartida = document.getElementById("distrito-partida");
-    const corregimientoPartida = document.getElementById("corregimiento-partida");
-
-    function cargarProvinciasPartida() {
-      provinciaPartida.innerHTML = '<option value="">Seleccione provincia</option>';
-      for (let prov in ubicaciones) {
-        provinciaPartida.innerHTML += `<option value="${prov}">${prov}</option>`;
-      }
-    }
-
-    function cargarDistritosPartida() {
-      const prov = provinciaPartida.value;
-      distritoPartida.innerHTML = '<option value="">Seleccione distrito</option>';
-      corregimientoPartida.innerHTML = '<option value="">Seleccione corregimiento</option>';
-      if (ubicaciones[prov]) {
-        for (let dist in ubicaciones[prov]) {
-          distritoPartida.innerHTML += `<option value="${dist}">${dist}</option>`;
-        }
-      }
-    }
-
-    function cargarCorregimientosPartida() {
-      const prov = provinciaPartida.value;
-      const dist = distritoPartida.value;
-      corregimientoPartida.innerHTML = '<option value="">Seleccione corregimiento</option>';
-      if (ubicaciones[prov] && ubicaciones[prov][dist]) {
-        ubicaciones[prov][dist].forEach(corr => {
-          corregimientoPartida.innerHTML += `<option value="${corr}">${corr}</option>`;
-        });
-      }
-    }
-
-    provinciaPartida.addEventListener("change", cargarDistritosPartida);
-    distritoPartida.addEventListener("change", cargarCorregimientosPartida);
+    const data = await response.json();
+    ubicaciones = data.direcciones || {};
 
     cargarProvinciasPartida();
-
-    // ---------------------------
-    // Para Dirección de Llegada
-    // ---------------------------
-    const provinciaLlegada = document.getElementById("provincia-llegada");
-    const distritoLlegada = document.getElementById("distrito-llegada");
-    const corregimientoLlegada = document.getElementById("corregimiento-llegada");
-
-    function cargarProvinciasLlegada() {
-      provinciaLlegada.innerHTML = '<option value="">Seleccione provincia</option>';
-      for (let prov in ubicaciones) {
-        provinciaLlegada.innerHTML += `<option value="${prov}">${prov}</option>`;
-      }
-    }
-
-    function cargarDistritosLlegada() {
-      const prov = provinciaLlegada.value;
-      distritoLlegada.innerHTML = '<option value="">Seleccione distrito</option>';
-      corregimientoLlegada.innerHTML = '<option value="">Seleccione corregimiento</option>';
-      if (ubicaciones[prov]) {
-        for (let dist in ubicaciones[prov]) {
-          distritoLlegada.innerHTML += `<option value="${dist}">${dist}</option>`;
-        }
-      }
-    }
-
-    function cargarCorregimientosLlegada() {
-      const prov = provinciaLlegada.value;
-      const dist = distritoLlegada.value;
-      corregimientoLlegada.innerHTML = '<option value="">Seleccione corregimiento</option>';
-      if (ubicaciones[prov] && ubicaciones[prov][dist]) {
-        ubicaciones[prov][dist].forEach(corr => {
-          corregimientoLlegada.innerHTML += `<option value="${corr}">${corr}</option>`;
-        });
-      }
-    }
-
-    provinciaLlegada.addEventListener("change", cargarDistritosLlegada);
-    distritoLlegada.addEventListener("change", cargarCorregimientosLlegada);
-
     cargarProvinciasLlegada();
+
+  } catch (error) {
+    console.error("Error al cargar ubicaciones:", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudieron cargar las direcciones desde el servidor.'
+    });
+  }
+}
+
+// Elementos DOM
+const provinciaPartida = document.getElementById("provincia-partida");
+const distritoPartida = document.getElementById("distrito-partida");
+const corregimientoPartida = document.getElementById("corregimiento-partida");
+
+const provinciaLlegada = document.getElementById("provincia-llegada");
+const distritoLlegada = document.getElementById("distrito-llegada");
+const corregimientoLlegada = document.getElementById("corregimiento-llegada");
+
+// Funciones de carga
+function cargarProvinciasPartida() {
+  provinciaPartida.innerHTML = '<option value="">Seleccione provincia</option>';
+  for (let prov in ubicaciones) {
+    provinciaPartida.innerHTML += `<option value="${prov}">${prov}</option>`;
+  }
+  distritoPartida.innerHTML = '<option value="">Seleccione distrito</option>';
+  corregimientoPartida.innerHTML = '<option value="">Seleccione corregimiento</option>';
+}
+
+function cargarDistritosPartida() {
+  const prov = provinciaPartida.value;
+  distritoPartida.innerHTML = '<option value="">Seleccione distrito</option>';
+  corregimientoPartida.innerHTML = '<option value="">Seleccione corregimiento</option>';
+  if (ubicaciones[prov]) {
+    for (let dist in ubicaciones[prov]) {
+      distritoPartida.innerHTML += `<option value="${dist}">${dist}</option>`;
+    }
+  }
+}
+
+function cargarCorregimientosPartida() {
+  const prov = provinciaPartida.value;
+  const dist = distritoPartida.value;
+  corregimientoPartida.innerHTML = '<option value="">Seleccione corregimiento</option>';
+  if (ubicaciones[prov] && ubicaciones[prov][dist]) {
+    ubicaciones[prov][dist].forEach(corr => {
+      corregimientoPartida.innerHTML += `<option value="${corr}">${corr}</option>`;
+    });
+  }
+}
+
+function cargarProvinciasLlegada() {
+  provinciaLlegada.innerHTML = '<option value="">Seleccione provincia</option>';
+  for (let prov in ubicaciones) {
+    provinciaLlegada.innerHTML += `<option value="${prov}">${prov}</option>`;
+  }
+  distritoLlegada.innerHTML = '<option value="">Seleccione distrito</option>';
+  corregimientoLlegada.innerHTML = '<option value="">Seleccione corregimiento</option>';
+}
+
+function cargarDistritosLlegada() {
+  const prov = provinciaLlegada.value;
+  distritoLlegada.innerHTML = '<option value="">Seleccione distrito</option>';
+  corregimientoLlegada.innerHTML = '<option value="">Seleccione corregimiento</option>';
+  if (ubicaciones[prov]) {
+    for (let dist in ubicaciones[prov]) {
+      distritoLlegada.innerHTML += `<option value="${dist}">${dist}</option>`;
+    }
+  }
+}
+
+function cargarCorregimientosLlegada() {
+  const prov = provinciaLlegada.value;
+  const dist = distritoLlegada.value;
+  corregimientoLlegada.innerHTML = '<option value="">Seleccione corregimiento</option>';
+  if (ubicaciones[prov] && ubicaciones[prov][dist]) {
+    ubicaciones[prov][dist].forEach(corr => {
+      corregimientoLlegada.innerHTML += `<option value="${corr}">${corr}</option>`;
+    });
+  }
+}
+
+// Eventos
+provinciaPartida.addEventListener("change", cargarDistritosPartida);
+distritoPartida.addEventListener("change", cargarCorregimientosPartida);
+provinciaLlegada.addEventListener("change", cargarDistritosLlegada);
+distritoLlegada.addEventListener("change", cargarCorregimientosLlegada);
+
+// Inicializar carga
+cargarUbicaciones();
+
 // --------------------
 // Funciones de cálculo y solicitud (con SweetAlert2)
 // --------------------
@@ -314,7 +297,6 @@ async function guardarSolicitud() {
   const cliente = document.getElementById("nombreCliente").value;
   const numero = document.getElementById("numeroCliente").value;
 
-  // ✅ Corregido
   const fechaInput = document.getElementById("fechaServicio").value;
   if (!fechaInput) {
     await Swal.fire({
@@ -328,8 +310,8 @@ async function guardarSolicitud() {
 
   const tipoTrabajo = document.getElementById("tiposTrabajos").value;
 
-  const direccionPartida = `${document.getElementById("provincia-partida").value}, ${document.getElementById("distrito-partida").value}, ${document.getElementById("corregimiento-partida").value}, ${document.getElementById("direccionPartida").value}`;
-  const direccionLlegada = `${document.getElementById("provincia-llegada").value}, ${document.getElementById("distrito-llegada").value}, ${document.getElementById("corregimiento-llegada").value}, ${document.getElementById("direccionLlegada").value}`;
+  const direccionPartida = `${provinciaPartida.value}, ${distritoPartida.value}, ${corregimientoPartida.value}, ${document.getElementById("direccionPartida").value}`;
+  const direccionLlegada = `${provinciaLlegada.value}, ${distritoLlegada.value}, ${corregimientoLlegada.value}, ${document.getElementById("direccionLlegada").value}`;
 
   const descripcion = document.getElementById("descripcion").value;
 
@@ -349,8 +331,6 @@ async function guardarSolicitud() {
     total: sumaFinal,
     servicios: serviciosDetalle.map(s => s.nombre)
   };
-
-  console.log(solicitud);
 
   try {
     Swal.fire({

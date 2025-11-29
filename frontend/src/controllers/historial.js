@@ -10,7 +10,7 @@ async function verificarSesion() {
   try {
     if (!token) throw new Error("No token");
 
-    const response = await fetch("http://localhost:8000/auth/me/", {
+    const response = await fetch("http://localhost:8000/auth/me", {
       method: "GET",
       headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
     });

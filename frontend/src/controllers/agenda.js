@@ -41,11 +41,21 @@ if (logout) {
 }
 
 // --------------------
-// Cargar agenda desde API
+// Cargar agenda desde API con SweetAlert de carga
 // --------------------
 async function cargarAgenda() {
   try {
-    const response = await fetch("http://localhost:8000/solicitud?estado=aceptada", {
+    // 🌀 Mostrar alerta de carga antes de hacer la petición
+    Swal.fire({
+      title: "Cargando agenda...",
+      text: "Por favor espera un momento.",
+      allowOutsideClick: false, // Evita que se cierre al hacer clic fuera
+      didOpen: () => {
+        Swal.showLoading(); // Muestra el spinner
+      }
+    });
+
+    const response = await fetch("http://localhost:8000/solicitud/?estado=aceptada", {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -62,6 +72,9 @@ async function cargarAgenda() {
 
     tbody.innerHTML = "";
 
+    // ✅ Cerrar el SweetAlert de carga antes de renderizar
+    Swal.close();
+
     if (agenda.length === 0) {
       const row = document.createElement("tr");
       row.innerHTML = '<td colspan="7" style="text-align: center;">No hay servicios agendados</td>';
@@ -75,7 +88,9 @@ async function cargarAgenda() {
     // Renderizar filas
     agenda.forEach(item => {
       const row = document.createElement("tr");
-      const fechaFormateada = item.fecha ? new Date(item.fecha).toLocaleDateString("es-ES") : "Sin fecha";
+      const fechaFormateada = item.fecha
+        ? new Date(item.fecha).toLocaleDateString("es-ES")
+        : "Sin fecha";
 
       row.innerHTML = `
         <td>${fechaFormateada}</td>
@@ -91,6 +106,10 @@ async function cargarAgenda() {
 
   } catch (error) {
     console.error("Error:", error);
+
+    // ❌ Cerrar la alerta de carga en caso de error
+    Swal.close();
+
     Swal.fire({
       icon: "error",
       title: "Error",
