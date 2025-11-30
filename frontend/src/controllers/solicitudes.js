@@ -172,9 +172,15 @@ async function renderSolicitudes(contenedorId, estado) {
       contenedor.appendChild(card);
     });
 
-    // Agregar botón "Cargar más"
-    const btnId = `btn-cargar-${estado}`;
-    let btn = document.getElementById(btnId);
+    // Control del botón "Cargar más"
+  const btnId = `btn-cargar-${estado}`;
+  let btn = document.getElementById(btnId);
+
+  // Si llegaron menos solicitudes que el tamaño de la página → NO mostrar botón
+  if (solicitudes.length < tamañoPagina) {
+    if (btn) btn.remove();  // eliminar si existe
+  } else {
+    // Si llegaron exactamente 10 → mostrar botón
     if (!btn) {
       btn = document.createElement("button");
       btn.id = btnId;
@@ -183,6 +189,8 @@ async function renderSolicitudes(contenedorId, estado) {
       btn.onclick = () => renderSolicitudes(contenedorId, estado);
       contenedor.appendChild(btn);
     }
+}
+
   }
 
   // Actualizar página y bandera
